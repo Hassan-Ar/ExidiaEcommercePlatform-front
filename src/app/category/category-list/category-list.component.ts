@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { CategoryService } from '../../proxy/application/services/category.service';
-import { CategoryDto } from '../../proxy/application/services/models';
+import { CategoryService } from '../../proxy/categories/category.service';
+import { CategoryDto } from '../../proxy/categories/dtos/models';
 
 @Component({
   selector: 'app-category-list',
@@ -23,7 +23,11 @@ export class CategoryListComponent implements OnInit {
 
   loadCategories(): void {
     this.loading = true;
-    this.categoryService.getList().subscribe({
+    this.categoryService.getList({ 
+      sorting: 'name',
+      maxResultCount: 1000,
+      skipCount: 0
+    }).subscribe({
       next: (response: any) => {
         console.log('Category list response:', response); // Debug log
         // Handle both array and paginated response formats

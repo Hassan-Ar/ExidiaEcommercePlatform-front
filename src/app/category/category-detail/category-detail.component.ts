@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CategoryService } from '../../proxy/application/services/category.service';
-import { CategoryDto } from '../../proxy/application/services/models';
+import { CategoryService } from '../../proxy/categories/category.service';
+import { CategoryDto } from '../../proxy/categories/dtos/models';
+import { PagedResultDto } from '@abp/ng.core';
 
 @Component({
   selector: 'app-category-detail',
@@ -19,7 +20,12 @@ export class CategoryDetailComponent implements OnInit {
     private router: Router,
     private categoryService: CategoryService
   ) {
-    this.categoryId = this.route.snapshot.paramMap.get('id')!;
+    const id = this.route.snapshot.paramMap.get('id');
+    if (!id) {
+      this.router.navigate(['/categories']);
+      return;
+    }
+    this.categoryId = id;
   }
 
   ngOnInit(): void {
@@ -50,36 +56,37 @@ export class CategoryDetailComponent implements OnInit {
   }
 
   loadSubCategories(): void {
-    // Since getChildCategories endpoint doesn't exist, we'll get all categories and filter
-    this.categoryService.getList().subscribe({
-      next: (data: any) => {
-        console.log('All categories for filtering:', data);
-        
-        let allCategories: CategoryDto[] = [];
-        
-        // Handle different response formats (same logic as category form)
-        if (Array.isArray(data)) {
-          allCategories = data;
-        } else if (data && Array.isArray(data.items)) {
-          allCategories = data.items;
-        } else if (data && data.result) {
-          if (Array.isArray(data.result)) {
-            allCategories = data.result;
-          } else if (data.result.items) {
-            allCategories = data.result.items;
-          }
-        }
-        
-        // Filter categories that have this category as parent
-        this.subCategories = allCategories.filter(cat => 
-          cat.parentCategoryId === this.categoryId
-        );
-        
-        console.log('Filtered subcategories:', this.subCategories);
+    // Use the proper getSubCategories method that exists in the service
+    this.categoryService.getSubCategories(this.categoryId).subscribe({
+      next: (subCategories: CategoryDto[]) => {
+        this.subCategories = subCategories;
+        console.log('Loaded subcategories:', this.subCategories);
       },
       error: (error) => {
         console.error('Error loading subcategories:', error);
         this.subCategories = [];
+        
+        // Fallback: get all categories and filter if getSubCategories fails
+        this.categoryService.getList({ 
+          sorting: 'name',
+          maxResultCount: 1000,
+          skipCount: 0
+        }).subscribe({
+          next: (data: PagedResultDto<CategoryDto>) => {
+            console.log('All categories for filtering:', data);
+            
+            // Filter categories that have this category as parent
+            this.subCategories = data.items.filter(cat => 
+              cat.parentCategoryId === this.categoryId
+            );
+            
+            console.log('Filtered subcategories:', this.subCategories);
+          },
+          error: (fallbackError) => {
+            console.error('Error loading subcategories (fallback):', fallbackError);
+            this.subCategories = [];
+          }
+        });
       }
     });
   }

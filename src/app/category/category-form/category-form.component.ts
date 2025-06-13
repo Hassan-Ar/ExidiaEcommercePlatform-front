@@ -1,139 +1,212 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { CategoryService } from '../../proxy/application/services/category.service';
-import { CategoryDto } from '../../proxy/application/services/models';
+import { CategoryService } from '../../proxy/categories/category.service';
+import { CategoryDto, CreateUpdateCategoryDto } from '../../proxy/categories/dtos/models';
 
 @Component({
   selector: 'app-category-form',
-  templateUrl: './category-form.component.html',
-  styleUrls: ['./category-form.component.scss']
+  template: `
+    <div class="card">
+      <div class="card-header">
+        <h2>{{ isEditMode ? 'Edit Category' : 'Create Category' }}</h2>
+      </div>
+      <div class="card-body">
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label for="name" class="form-label">Name</label>
+            <input type="text" class="form-control" id="name" formControlName="name">
+            <div class="invalid-feedback" *ngIf="form.get('name').invalid && form.get('name').touched">
+              Name is required
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" formControlName="description" rows="3"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label for="parentId" class="form-label">Parent Category</label>
+            <select class="form-select" id="parentId" formControlName="parentId">
+              <option value="">None</option>
+              <option *ngFor="let category of categories" [value]="category.id" [disabled]="isEditMode && category.id === currentId">
+                {{ category.name }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="isActive" formControlName="isActive">
+              <label class="form-check-label" for="isActive">
+                Active
+              </label>
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="displayOrder" class="form-label">Display Order</label>
+            <input type="number" class="form-control" id="displayOrder" formControlName="displayOrder" min="0">
+            <div class="invalid-feedback" *ngIf="form.get('displayOrder').invalid && form.get('displayOrder').touched">
+              Display order must be greater than or equal to 0
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="image" class="form-label">Category Image</label>
+            <input type="file" class="form-control" id="image" (change)="onFileSelected($event)" accept="image/*">
+            <div *ngIf="selectedFile || currentImageUrl" class="mt-2">
+              <img [src]="previewUrl || currentImageUrl" class="img-thumbnail" style="max-height: 200px;">
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-end gap-2">
+            <button type="button" class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || loading">
+              <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+              {{ isEditMode ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `,
+  styles: [`
+    .card {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+  `]
 })
 export class CategoryFormComponent implements OnInit {
-  categoryForm: FormGroup;
+  form: FormGroup;
   isEditMode = false;
-  categoryId: string | null = null;
-  categories: CategoryDto[] = [];
   loading = false;
-  submitted = false;
+  categories: CategoryDto[] = [];
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  currentImageUrl: string | null = null;
+  currentId: string | null = null;
 
   constructor(
     private fb: FormBuilder,
     private categoryService: CategoryService,
-    private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
-    this.categoryForm = this.fb.group({
-      name: ['', [Validators.required, Validators.maxLength(100)]],
-      description: ['', Validators.maxLength(500)],
-      parentCategoryId: [null],
-      imageUrl: ['', Validators.pattern('https?://.*')],
-      displayOrder: [0, [Validators.min(0)]]
+    this.form = this.fb.group({
+      name: ['', Validators.required],
+      description: [''],
+      parentId: [''],
+      isActive: [true],
+      displayOrder: [0, [Validators.required, Validators.min(0)]]
     });
-  }
-
-  get f() {
-    return this.categoryForm.controls;
   }
 
   ngOnInit(): void {
     this.loadCategories();
-    this.categoryId = this.route.snapshot.paramMap.get('id');
-    
-    // Check for parentId query parameter when creating a subcategory
-    const parentId = this.route.snapshot.queryParamMap.get('parentId');
-    if (parentId && !this.categoryId) {
-      this.categoryForm.patchValue({ parentCategoryId: parentId });
-    }
-    
-    if (this.categoryId) {
+    const id = this.route.snapshot.paramMap.get('id');
+    if (id) {
       this.isEditMode = true;
-      this.loadCategory();
+      this.currentId = id;
+      this.loadCategory(id);
     }
   }
 
   loadCategories(): void {
-    this.loading = true;
-    this.categoryService.getList().subscribe({
-      next: (data: any) => {
-        console.log('Categories response:', data); // Debug log to see actual structure
-        
-        // ABP typically wraps responses in various ways, let's handle them all
-        if (Array.isArray(data)) {
-          // Direct array response
-          this.categories = data;
-        } else if (data && Array.isArray(data.items)) {
-          // Paged result with items array
-          this.categories = data.items;
-        } else if (data && data.result) {
-          // Wrapped in result property
-          if (Array.isArray(data.result)) {
-            this.categories = data.result;
-          } else if (data.result.items) {
-            this.categories = data.result.items;
-          } else {
-            this.categories = [];
-          }
-        } else {
-          // Fallback: empty array
-          this.categories = [];
+    this.categoryService.getList({ 
+      sorting: 'name',
+      maxResultCount: 1000,
+      skipCount: 0
+    }).subscribe({
+      next: (response: any) => {
+        if (Array.isArray(response)) {
+          this.categories = response;
+        } else if (response && response.items) {
+          this.categories = response.items;
+        } else if (response && response.result) {
+          this.categories = Array.isArray(response.result) ? response.result : response.result.items || [];
         }
-        
-        // Filter out current category if in edit mode to prevent self-parent assignment
-        if (this.isEditMode && this.categoryId) {
-          this.categories = this.categories.filter(cat => cat.id !== this.categoryId);
-        }
-        
-        this.loading = false;
-        console.log('Processed categories:', this.categories);
       },
       error: (error) => {
         console.error('Error loading categories:', error);
-        this.loading = false;
-        this.categories = [];
       }
     });
   }
 
-  loadCategory(): void {
+  loadCategory(id: string): void {
     this.loading = true;
-    this.categoryService.get(this.categoryId!).subscribe({
+    this.categoryService.get(id).subscribe({
       next: (category) => {
-        this.categoryForm.patchValue(category);
+        this.form.patchValue({
+          name: category.name,
+          description: category.description,
+          parentId: category.parentCategoryId,
+          isActive: category.isActive,
+          displayOrder: category.displayOrder
+        });
+        // @ts-ignore - imageUrl exists in backend but not in proxy
+        this.currentImageUrl = category.imageUrl;
         this.loading = false;
       },
-      error: () => {
+      error: (error) => {
+        console.error('Error loading category:', error);
         this.loading = false;
-        this.router.navigate(['/categories']);
       }
     });
+  }
+
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewUrl = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   onSubmit(): void {
-    this.submitted = true;
-    if (this.categoryForm.valid) {
-      this.loading = true;
-      if (this.isEditMode) {
-        this.categoryService.update(this.categoryId!, this.categoryForm.value).subscribe({
-          next: () => {
-            this.loading = false;
-            this.router.navigate(['/categories']);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      } else {
-        this.categoryService.create(this.categoryForm.value).subscribe({
-          next: () => {
-            this.loading = false;
-            this.router.navigate(['/categories']);
-          },
-          error: () => {
-            this.loading = false;
-          }
-        });
-      }
+    if (this.form.invalid) {
+      return;
+    }
+
+    this.loading = true;
+    const formValue = this.form.value;
+
+    const dto: CreateUpdateCategoryDto = {
+      name: formValue.name,
+      description: formValue.description,
+      parentId: formValue.parentId,
+      displayOrder: formValue.displayOrder,
+      isActive: formValue.isActive,
+      image: this.selectedFile || undefined
+    };
+
+    if (this.isEditMode) {
+      const id = this.route.snapshot.paramMap.get('id');
+      this.categoryService.update(id!, dto).subscribe({
+        next: () => {
+          this.router.navigate(['/categories']);
+        },
+        error: (error) => {
+          console.error('Error updating category:', error);
+          this.loading = false;
+        }
+      });
+    } else {
+      this.categoryService.create(dto).subscribe({
+        next: () => {
+          this.router.navigate(['/categories']);
+        },
+        error: (error) => {
+          console.error('Error creating category:', error);
+          this.loading = false;
+        }
+      });
     }
   }
 

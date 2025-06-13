@@ -1,4 +1,4 @@
-import type { CreateShopDto, ShopDto, UpdateShopDto, UpdateShopSettingsDto } from './models';
+import type { CreateUpdateShopDto, ShopDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -10,27 +10,11 @@ export class ShopService {
   apiName = 'Default';
   
 
-  activate = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ShopDto>({
-      method: 'POST',
-      url: `/api/app/shop/${id}/activate`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  create = (input: CreateShopDto, config?: Partial<Rest.Config>) =>
+  create = (input: CreateUpdateShopDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ShopDto>({
       method: 'POST',
       url: '/api/app/shop',
       body: input,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  deactivate = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ShopDto>({
-      method: 'POST',
-      url: `/api/app/shop/${id}/deactivate`,
     },
     { apiName: this.apiName,...config });
   
@@ -51,36 +35,19 @@ export class ShopService {
     { apiName: this.apiName,...config });
   
 
-  getList = (config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ShopDto[]>({
-      method: 'GET',
-      url: '/api/app/shop',
-    },
-    { apiName: this.apiName,...config });
-  
-
-  getPagedList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ShopDto>>({
       method: 'GET',
-      url: '/api/app/shop/paged-list',
+      url: '/api/app/shop',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
 
-  update = (id: string, input: UpdateShopDto, config?: Partial<Rest.Config>) =>
+  update = (id: string, input: CreateUpdateShopDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ShopDto>({
       method: 'PUT',
       url: `/api/app/shop/${id}`,
-      body: input,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  updateSettings = (id: string, input: UpdateShopSettingsDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ShopDto>({
-      method: 'PUT',
-      url: `/api/app/shop/${id}/settings`,
       body: input,
     },
     { apiName: this.apiName,...config });

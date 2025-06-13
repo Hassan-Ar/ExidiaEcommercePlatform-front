@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { OrderService } from '../../proxy/application/services/order.service';
+import { OrderService } from '../../proxy/orders/order.service';
 
 @Component({
   selector: 'app-order-list',
@@ -37,8 +37,12 @@ export class OrderListComponent implements OnInit {
   constructor(private orderService: OrderService) {}
 
   ngOnInit(): void {
-    this.orderService.getList().subscribe((data) => {
-      this.orders = data;
+    this.orderService.getList({ 
+      sorting: 'creationTime desc',
+      maxResultCount: 1000,
+      skipCount: 0
+    }).subscribe((data) => {
+      this.orders = data.items || [];
     });
   }
 } 

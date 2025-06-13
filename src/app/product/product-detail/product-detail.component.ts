@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ProductService } from '../../proxy/application/services/product.service';
+import { ProductService } from '../../proxy/products/product.service';
 
 @Component({
   selector: 'app-product-detail',

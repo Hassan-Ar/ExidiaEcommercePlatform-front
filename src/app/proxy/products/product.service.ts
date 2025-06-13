@@ -1,4 +1,4 @@
-import type { CreateProductDto, ProductDto, UpdateProductDto, UpdateProductStockDto } from './models';
+import type { CreateUpdateProductDto, ProductDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -10,13 +10,15 @@ export class ProductService {
   apiName = 'Default';
   
 
-  create = (input: CreateProductDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ProductDto>({
+  create = (input: CreateUpdateProductDto, config?: Partial<Rest.Config>) => {
+    const formData = this.createFormData(input);
+    return this.restService.request<any, ProductDto>({
       method: 'POST',
       url: '/api/app/product',
-      body: input,
+      body: formData,
     },
     { apiName: this.apiName,...config });
+  }
   
 
   delete = (id: string, config?: Partial<Rest.Config>) =>
@@ -43,55 +45,79 @@ export class ProductService {
     { apiName: this.apiName,...config });
   
 
-  getList = (config?: Partial<Rest.Config>) =>
+  getByShop = (shopId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ProductDto[]>({
       method: 'GET',
-      url: '/api/app/product',
+      url: `/api/app/product/by-shop/${shopId}`,
     },
     { apiName: this.apiName,...config });
   
 
-  getPagedList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ProductDto>>({
       method: 'GET',
-      url: '/api/app/product/paged-list',
+      url: '/api/app/product',
       params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
     },
     { apiName: this.apiName,...config });
   
 
-  publish = (id: string, config?: Partial<Rest.Config>) =>
+  toggleActiveStatus = (id: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ProductDto>({
       method: 'POST',
-      url: `/api/app/product/${id}/publish`,
+      url: `/api/app/product/${id}/toggle-active-status`,
     },
     { apiName: this.apiName,...config });
   
 
-  unpublish = (id: string, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ProductDto>({
-      method: 'POST',
-      url: `/api/app/product/${id}/unpublish`,
-    },
-    { apiName: this.apiName,...config });
-  
-
-  update = (id: string, input: UpdateProductDto, config?: Partial<Rest.Config>) =>
-    this.restService.request<any, ProductDto>({
+  update = (id: string, input: CreateUpdateProductDto, config?: Partial<Rest.Config>) => {
+    const formData = this.createFormData(input);
+    return this.restService.request<any, ProductDto>({
       method: 'PUT',
       url: `/api/app/product/${id}`,
-      body: input,
+      body: formData,
+    },
+    { apiName: this.apiName,...config });
+  }
+  
+
+  updatePrice = (id: string, newPrice: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ProductDto>({
+      method: 'PUT',
+      url: `/api/app/product/${id}/price`,
+      params: { newPrice },
     },
     { apiName: this.apiName,...config });
   
 
-  updateStock = (id: string, input: UpdateProductStockDto, config?: Partial<Rest.Config>) =>
+  updateStock = (id: string, quantity: number, config?: Partial<Rest.Config>) =>
     this.restService.request<any, ProductDto>({
       method: 'PUT',
       url: `/api/app/product/${id}/stock`,
-      body: input,
+      params: { quantity },
     },
     { apiName: this.apiName,...config });
 
   constructor(private restService: RestService) {}
+
+  private createFormData(input: CreateUpdateProductDto): FormData {
+    const formData = new FormData();
+    
+    // Add text fields
+    formData.append('name', input.name || '');
+    formData.append('description', input.description || '');
+    formData.append('price', input.price?.toString() || '0');
+    formData.append('stockQuantity', input.stockQuantity?.toString() || '0');
+    formData.append('sku', input.sku || '');
+    formData.append('isActive', input.isActive?.toString() || 'false');
+    formData.append('categoryId', input.categoryId || '');
+    formData.append('shopId', input.shopId || '');
+    
+    // Add image file if exists
+    if (input.image) {
+      formData.append('image', input.image);
+    }
+    
+    return formData;
+  }
 }
