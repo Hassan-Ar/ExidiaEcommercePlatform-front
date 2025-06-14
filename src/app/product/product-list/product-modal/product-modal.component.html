@@ -1,0 +1,117 @@
+<div class="modal-header">
+  <h4 class="modal-title">{{ title }}</h4>
+  <button type="button" class="btn-close" aria-label="Close" (click)="activeModal.dismiss('Cross click')"></button>
+</div>
+<div class="modal-body">
+  <form [formGroup]="productForm" (ngSubmit)="saveProduct()">
+    <!-- Basic Information -->
+    <div class="mb-4">
+      <h5 class="form-section-title">Basic Information</h5>
+      
+      <div class="mb-3">
+        <label for="name" class="form-label">Product Name <span class="text-danger">*</span></label>
+        <input type="text" id="name" formControlName="name" class="form-control" placeholder="Enter product name" />
+        <div *ngIf="productForm.get('name')?.invalid && productForm.get('name')?.touched" class="text-danger mt-1 small">
+          Product name is required.
+        </div>
+      </div>
+      
+      <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea id="description" formControlName="description" class="form-control" rows="3" placeholder="Enter product description"></textarea>
+      </div>
+      
+      <div class="mb-3">
+        <label for="sku" class="form-label">SKU <span class="text-danger">*</span></label>
+        <input type="text" id="sku" formControlName="sku" class="form-control" placeholder="Enter product SKU" />
+        <div *ngIf="productForm.get('sku')?.invalid && productForm.get('sku')?.touched" class="text-danger mt-1 small">
+          SKU is required.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Pricing & Inventory -->
+    <div class="mb-4">
+      <h5 class="form-section-title">Pricing & Inventory</h5>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="price" class="form-label">Price <span class="text-danger">*</span></label>
+          <div class="input-group">
+            <span class="input-group-text">$</span>
+            <input type="number" id="price" formControlName="price" class="form-control" placeholder="0.00" step="0.01" min="0" />
+          </div>
+          <div *ngIf="productForm.get('price')?.invalid && productForm.get('price')?.touched" class="text-danger mt-1 small">
+            <span *ngIf="productForm.get('price')?.errors?.['required']">Price is required.</span>
+            <span *ngIf="productForm.get('price')?.errors?.['min']">Price must be greater than or equal to 0.</span>
+          </div>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label for="stockQuantity" class="form-label">Stock Quantity <span class="text-danger">*</span></label>
+          <input type="number" id="stockQuantity" formControlName="stockQuantity" class="form-control" placeholder="0" min="0" />
+          <div *ngIf="productForm.get('stockQuantity')?.invalid && productForm.get('stockQuantity')?.touched" class="text-danger mt-1 small">
+            <span *ngIf="productForm.get('stockQuantity')?.errors?.['required']">Stock quantity is required.</span>
+            <span *ngIf="productForm.get('stockQuantity')?.errors?.['min']">Stock quantity must be greater than or equal to 0.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Categories & Shop -->
+    <div class="mb-4">
+      <h5 class="form-section-title">Categories & Shop</h5>
+      
+      <div class="row">
+        <div class="col-md-6 mb-3">
+          <label for="categoryId" class="form-label">Category</label>
+          <select id="categoryId" formControlName="categoryId" class="form-select">
+            <option value="">-- Select Category --</option>
+            <option *ngFor="let category of categories" [value]="category.id">{{ category.name }}</option>
+          </select>
+        </div>
+        
+        <div class="col-md-6 mb-3">
+          <label for="shopId" class="form-label">Shop</label>
+          <select id="shopId" formControlName="shopId" class="form-select">
+            <option value="">-- Select Shop --</option>
+            <option *ngFor="let shop of shops" [value]="shop.id">{{ shop.name }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Product Image -->
+    <div class="mb-4">
+      <h5 class="form-section-title">Product Image</h5>
+      
+      <div class="mb-3">
+        <label for="image" class="form-label">Product Image</label>
+        <input type="file" id="image" class="form-control" (change)="onFileSelected($event)" accept="image/*" />
+        <small class="form-text text-muted">Recommended size: 800x800 pixels, max 2MB</small>
+      </div>
+      
+      <!-- Image Preview -->
+      <div *ngIf="imagePreview || product?.imageUrl" class="image-preview mt-2">
+        <img [src]="imagePreview || product?.imageUrl" alt="Product image preview" class="img-thumbnail" style="max-height: 200px;">
+      </div>
+    </div>
+    
+    <!-- Status -->
+    <div class="mb-3">
+      <div class="form-check form-switch">
+        <input class="form-check-input" type="checkbox" id="isActive" formControlName="isActive">
+        <label class="form-check-label" for="isActive">
+          Product is active and available for purchase
+        </label>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="modal-footer">
+  <button type="button" class="btn btn-outline-secondary" (click)="activeModal.dismiss('Cancel')">Cancel</button>
+  <button type="button" class="btn btn-primary" (click)="saveProduct()" [disabled]="productForm.invalid || isSubmitting">
+    <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+    {{ isSubmitting ? 'Saving...' : 'Save Product' }}
+  </button>
+</div>

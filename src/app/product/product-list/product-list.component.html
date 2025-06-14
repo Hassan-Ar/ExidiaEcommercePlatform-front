@@ -1,0 +1,172 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="d-flex justify-content-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div *ngIf="!loading" class="products-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <h1 class="page-title">
+          <i class="fas fa-box me-2"></i>
+          Products Management
+        </h1>
+        <p class="page-subtitle">Manage your product inventory and listings</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-primary btn-create" (click)="openCreateProductModal()">
+          <i class="fas fa-plus me-1"></i>
+          <span class="btn-text">Create Product</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon total">
+        <i class="fas fa-box"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ products.length }}</div>
+        <div class="stat-label">Total Products</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon active">
+        <i class="fas fa-check-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ getActiveCount() }}</div>
+        <div class="stat-label">Active Products</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon inactive">
+        <i class="fas fa-times-circle"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ getInactiveCount() }}</div>
+        <div class="stat-label">Inactive Products</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon stock">
+        <i class="fas fa-cubes"></i>
+      </div>
+      <div class="stat-content">
+        <div class="stat-number">{{ getTotalStock() }}</div>
+        <div class="stat-label">Total Stock</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Products Grid -->
+  <div class="products-section" *ngIf="products.length > 0">
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of products">
+        <!-- Product Image -->
+        <div class="product-card-image">
+          <img *ngIf="product.imageUrl; else noImage" 
+               [src]="product.imageUrl" 
+               [alt]="product.name"
+               class="product-img"
+               (error)="onImageError($event)">
+          <ng-template #noImage>
+            <div class="no-image-placeholder">
+              <i class="fas fa-image"></i>
+            </div>
+          </ng-template>
+          
+          <!-- Status Badge -->
+          <div class="status-badge-overlay">
+            <span class="status-badge" 
+                  [ngClass]="product.isActive ? 'active' : 'inactive'">
+              <i class="fas" [ngClass]="product.isActive ? 'fa-check' : 'fa-times'"></i>
+              {{ product.isActive ? 'Active' : 'Inactive' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Product Content -->
+        <div class="product-card-content">
+          <h3 class="product-name" [routerLink]="['/products', product.id]">
+            {{ product.name }}
+          </h3>
+          
+          <p class="product-description" *ngIf="product.description">
+            {{ product.description | slice:0:120 }}
+            <span *ngIf="product.description.length > 120">...</span>
+          </p>
+          
+          <div class="product-meta">
+            <span class="meta-item price">
+              <i class="fas fa-tag me-1"></i>
+              {{ product.price | currency }}
+            </span>
+            <span class="meta-item" [ngClass]="getStockClass(product.stockQuantity)">
+              <i class="fas fa-cubes me-1"></i>
+              Stock: {{ product.stockQuantity }}
+            </span>
+            <span class="meta-item" *ngIf="product.sku">
+              <i class="fas fa-barcode me-1"></i>
+              SKU: {{ product.sku }}
+            </span>
+          </div>
+          
+          <div class="product-meta">
+            <span class="meta-item">
+              <i class="fas fa-calendar-alt me-1"></i>
+              {{ product.creationTime | date:'MMM dd, yyyy' }}
+            </span>
+          </div>
+        </div>
+        
+        <!-- Product Actions -->
+        <div class="product-card-actions">
+          <button class="btn btn-sm btn-outline-primary" 
+                  [routerLink]="['/products', product.id]"
+                  title="View Details">
+            <i class="fas fa-eye"></i>
+            <span class="btn-text">View</span>
+          </button>
+          <button class="btn btn-sm btn-outline-warning" 
+                  (click)="openEditProductModal(product)"
+                  title="Edit">
+            <i class="fas fa-edit"></i>
+            <span class="btn-text">Edit</span>
+          </button>
+          <button class="btn btn-sm" 
+                  [ngClass]="product.isActive ? 'btn-outline-danger' : 'btn-outline-success'"
+                  (click)="toggleProductStatus(product)"
+                  [title]="product.isActive ? 'Deactivate' : 'Activate'">
+            <i class="fas" [ngClass]="product.isActive ? 'fa-pause' : 'fa-play'"></i>
+            <span class="btn-text">{{ product.isActive ? 'Deactivate' : 'Activate' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="products.length === 0">
+    <div class="empty-state-content">
+      <div class="empty-state-icon">
+        <i class="fas fa-box"></i>
+      </div>
+      <h3 class="empty-state-title">No Products Found</h3>
+      <p class="empty-state-text">
+        Start building your inventory by creating your first product.
+      </p>
+      <button class="btn btn-primary btn-lg" (click)="openCreateProductModal()">
+        <i class="fas fa-plus me-1"></i>
+        Create Your First Product
+      </button>
+    </div>
+  </div>
+</div>

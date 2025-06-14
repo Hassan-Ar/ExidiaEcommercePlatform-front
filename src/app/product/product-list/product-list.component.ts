@@ -7,86 +7,8 @@ import { ProductDto } from '../../proxy/products/dtos/models';
 
 @Component({
   selector: 'app-product-list',
-  template: `
-    <div class="card">
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <h2>Products</h2>
-        <div>
-          <span class="badge bg-success me-2">Active: {{ getActiveCount() }}</span>
-          <span class="badge bg-warning">Inactive: {{ getInactiveCount() }}</span>
-          <button class="btn btn-primary ms-3" (click)="openCreateProductModal()">Create New Product</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead>
-              <tr>
-                <th>Image</th>
-                <th>Name</th>
-                <th>SKU</th>
-                <th>Price</th>
-                <th>Stock</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr *ngFor="let product of products">
-                <td>
-                  <img *ngIf="product.imageUrl" 
-                       [src]="product.imageUrl" 
-                       [alt]="product.name"
-                       class="product-image"
-                       (error)="onImageError($event)">
-                </td>
-                <td>{{ product.name }}</td>
-                <td>{{ product.sku }}</td>
-                <td>{{ product.price | currency }}</td>
-                <td>
-                  <span [class]="getStockClass(product.stockQuantity)">
-                    {{ product.stockQuantity }}
-                  </span>
-                </td>
-                <td>
-                  <span [class]="product.isActive ? 'badge bg-success' : 'badge bg-warning'">
-                    {{ product.isActive ? 'Active' : 'Inactive' }}
-                  </span>
-                </td>
-                <td>
-                  <div class="btn-group">
-                    <a [routerLink]="['/products', product.id]" class="btn btn-info btn-sm">View</a>
-                    <button class="btn btn-primary btn-sm" (click)="openEditProductModal(product)">Edit</button>
-                    <button class="btn btn-sm" 
-                            [class]="product.isActive ? 'btn-warning' : 'btn-success'"
-                            (click)="toggleProductStatus(product)">
-                      {{ product.isActive ? 'Deactivate' : 'Activate' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div *ngIf="loading" class="text-center">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
-  styles: [`
-    .product-image {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 4px;
-    }
-    .btn-group .btn {
-      padding: 0.25rem 0.5rem;
-    }
-  `]
+  templateUrl: './product-list.component.html',
+  styleUrls: ['./product-list.component.scss']
 })
 export class ProductListComponent implements OnInit {
   products: ProductDto[] = [];
@@ -211,5 +133,9 @@ export class ProductListComponent implements OnInit {
 
   onImageError(event: any): void {
     event.target.style.display = 'none';
+  }
+
+  getTotalStock(): number {
+    return this.products.reduce((total, product) => total + product.stockQuantity, 0);
   }
 } 
