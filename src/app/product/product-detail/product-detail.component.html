@@ -1,0 +1,239 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="d-flex justify-content-center py-5">
+  <div class="spinner-border text-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+
+<!-- Error State -->
+<div *ngIf="error" class="error-container">
+  <div class="error-content">
+    <div class="error-icon">
+      <i class="fas fa-exclamation-triangle"></i>
+    </div>
+    <h4 class="error-title">Error Loading Product</h4>
+    <p class="error-text">{{ error }}</p>
+    <button class="btn btn-primary" (click)="retry()">
+      <i class="fas fa-redo me-1"></i>
+      Try Again
+    </button>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div *ngIf="product" class="product-detail-container">
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb custom-breadcrumb">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="text-decoration-none">
+          <i class="fas fa-home me-1"></i>Dashboard
+        </a>
+      </li>
+      <li class="breadcrumb-item">
+        <a routerLink="/products" class="text-decoration-none">Products</a>
+      </li>
+      <li class="breadcrumb-item active" aria-current="page">{{ product.name }}</li>
+    </ol>
+  </nav>
+
+  <!-- Header Section -->
+  <div class="product-header">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div class="product-title-section">
+        <h1 class="product-title">
+          <i class="fas fa-box me-2"></i>
+          {{ product.name }}
+        </h1>
+        <div class="product-meta">
+          <span class="status-badge" [ngClass]="product.isActive ? 'status-active' : 'status-inactive'">
+            <i class="fas" [ngClass]="product.isActive ? 'fa-check-circle' : 'fa-times-circle'"></i>
+            {{ product.isActive ? 'Active' : 'Inactive' }}
+          </span>
+          <span class="creation-date" *ngIf="product.creationTime">
+            <i class="fas fa-calendar-alt me-1"></i>
+            Created {{ product.creationTime | date:'MMM dd, yyyy' }}
+          </span>
+        </div>
+      </div>
+      
+      <!-- Action Buttons -->
+      <div class="action-buttons">
+        <button class="btn btn-outline-primary btn-action" 
+                (click)="navigateToEdit()"
+                title="Edit Product">
+          <i class="fas fa-edit me-1"></i>
+          <span class="btn-text">Edit</span>
+        </button>
+        <button class="btn btn-primary btn-action" 
+                (click)="toggleProductStatus()"
+                [title]="product.isActive ? 'Deactivate Product' : 'Activate Product'">
+          <i class="fas" [ngClass]="product.isActive ? 'fa-pause' : 'fa-play'"></i>
+          <span class="btn-text">{{ product.isActive ? 'Deactivate' : 'Activate' }}</span>
+        </button>
+        <button class="btn btn-outline-secondary btn-action" 
+                (click)="goBack()"
+                title="Go Back">
+          <i class="fas fa-arrow-left me-1"></i>
+          <span class="btn-text">Back</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Information Cards -->
+  <div class="row mb-4">
+    <!-- Main Information Card -->
+    <div class="col-lg-8">
+      <div class="info-card">
+        <div class="info-card-header">
+          <h3 class="info-card-title">
+            <i class="fas fa-info-circle me-2"></i>
+            Product Information
+          </h3>
+        </div>
+        <div class="info-card-body">
+          <!-- Product Image -->
+          <div class="product-image-section" *ngIf="product.imageUrl">
+            <div class="image-container" (click)="openImageModal()">
+              <img [src]="product.imageUrl" 
+                   [alt]="product.name" 
+                   class="product-image"
+                   (error)="onImageError($event)">
+              <div class="image-overlay">
+                <i class="fas fa-search-plus"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Product Details -->
+          <div class="product-details">
+            <div class="detail-item">
+              <label class="detail-label">Name:</label>
+              <span class="detail-value">{{ product.name }}</span>
+            </div>
+            
+            <div class="detail-item" *ngIf="product.description">
+              <label class="detail-label">Description:</label>
+              <p class="detail-value description-text">{{ product.description }}</p>
+            </div>
+            
+            <div class="detail-item" *ngIf="product.sku">
+              <label class="detail-label">SKU:</label>
+              <span class="detail-value">{{ product.sku }}</span>
+            </div>
+            
+            <div class="detail-item">
+              <label class="detail-label">Price:</label>
+              <span class="detail-value price-value">${{ product.price | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="detail-item" *ngIf="product.categoryId">
+              <label class="detail-label">Category ID:</label>
+              <span class="detail-value">{{ product.categoryId }}</span>
+            </div>
+
+            <div class="detail-item" *ngIf="product.shopId">
+              <label class="detail-label">Shop ID:</label>
+              <span class="detail-value">{{ product.shopId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Statistics Card -->
+    <div class="col-lg-4">
+      <div class="stats-card">
+        <div class="stats-card-header">
+          <h3 class="stats-card-title">
+            <i class="fas fa-chart-bar me-2"></i>
+            Product Statistics
+          </h3>
+        </div>
+        <div class="stats-card-body">
+          <div class="stat-item">
+            <div class="stat-icon stock" [ngClass]="getStockStatusClass()">
+              <i class="fas fa-boxes"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ product.stockQuantity }}</div>
+              <div class="stat-label">Stock Quantity</div>
+            </div>
+          </div>
+          
+          <div class="stat-item">
+            <div class="stat-icon price">
+              <i class="fas fa-dollar-sign"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">${{ product.price | number:'1.2-2' }}</div>
+              <div class="stat-label">Current Price</div>
+            </div>
+          </div>
+          
+          <div class="stat-item">
+            <div class="stat-icon status" [ngClass]="product.isActive ? 'active' : 'inactive'">
+              <i class="fas" [ngClass]="product.isActive ? 'fa-check' : 'fa-times'"></i>
+            </div>
+            <div class="stat-content">
+              <div class="stat-number">{{ product.isActive ? 'Yes' : 'No' }}</div>
+              <div class="stat-label">Active Status</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Actions -->
+  <div class="additional-actions mb-4" *ngIf="canDelete || canDuplicate">
+    <div class="row">
+      <div class="col-12">
+        <div class="actions-card">
+          <div class="actions-card-header">
+            <h3 class="actions-card-title">
+              <i class="fas fa-cogs me-2"></i>
+              Additional Actions
+            </h3>
+          </div>
+          <div class="actions-card-body">
+            <div class="action-buttons-grid">
+              <button class="btn btn-outline-info action-btn" 
+                      (click)="duplicateProduct()" 
+                      *ngIf="canDuplicate"
+                      title="Create a copy of this product">
+                <i class="fas fa-copy me-2"></i>
+                <div class="action-text">
+                  <div class="action-title">Duplicate Product</div>
+                  <small class="action-description">Create a copy with same details</small>
+                </div>
+              </button>
+              
+              <button class="btn btn-outline-danger action-btn" 
+                      (click)="confirmDelete()" 
+                      *ngIf="canDelete"
+                      title="Permanently delete this product">
+                <i class="fas fa-trash me-2"></i>
+                <div class="action-text">
+                  <div class="action-title">Delete Product</div>
+                  <small class="action-description">This action cannot be undone</small>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Image Modal -->
+<div class="image-modal" *ngIf="showImageModal" (click)="closeImageModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <button class="modal-close" (click)="closeImageModal()">
+      <i class="fas fa-times"></i>
+    </button>
+    <img [src]="selectedImage || product.imageUrl" [alt]="product.name">
+  </div>
+</div>

@@ -53,11 +53,18 @@ export class ProductService {
     { apiName: this.apiName,...config });
   
 
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: PagedAndSortedResultRequestDto & { filter?: string; categoryId?: string; isActive?: boolean }, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ProductDto>>({
       method: 'GET',
       url: '/api/app/product',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { 
+        sorting: input.sorting,
+        skipCount: input.skipCount,
+        maxResultCount: input.maxResultCount,
+        filter: input.filter,
+        categoryId: input.categoryId,
+        isActive: input.isActive
+      },
     },
     { apiName: this.apiName,...config });
   
@@ -111,7 +118,6 @@ export class ProductService {
     formData.append('sku', input.sku || '');
     formData.append('isActive', input.isActive?.toString() || 'false');
     formData.append('categoryId', input.categoryId || '');
-    formData.append('shopId', input.shopId || '');
     
     // Add image file if exists
     if (input.image) {

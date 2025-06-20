@@ -58,9 +58,9 @@
       </div>
     </div>
     
-    <!-- Categories & Shop -->
+    <!-- Category -->
     <div class="mb-4">
-      <h5 class="form-section-title">Categories & Shop</h5>
+      <h5 class="form-section-title">Category</h5>
       
       <div class="row">
         <div class="col-md-6 mb-3">
@@ -71,13 +71,7 @@
           </select>
         </div>
         
-        <div class="col-md-6 mb-3">
-          <label for="shopId" class="form-label">Shop</label>
-          <select id="shopId" formControlName="shopId" class="form-select">
-            <option value="">-- Select Shop --</option>
-            <option *ngFor="let shop of shops" [value]="shop.id">{{ shop.name }}</option>
-          </select>
-        </div>
+        <!-- Shop selection removed; default shop is now used automatically -->
       </div>
     </div>
     

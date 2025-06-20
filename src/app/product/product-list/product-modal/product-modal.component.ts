@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { CategoryService } from '../../../proxy/categories/category.service';
-import { ShopService } from '../../../proxy/shops/shop.service';
 import { CategoryDto } from '../../../proxy/categories/dtos/models';
 import { ProductDto } from '../../../proxy/products/dtos/models';
 import { finalize } from 'rxjs/operators';
@@ -17,7 +16,6 @@ export class ProductModalComponent implements OnInit {
   title: string = 'Create New Product';
   product: ProductDto;
   categories: CategoryDto[] = [];
-  shops: any[] = [];
   imagePreview: string | null = null;
   selectedFile: File | null = null;
   isSubmitting = false;
@@ -25,8 +23,7 @@ export class ProductModalComponent implements OnInit {
   constructor(
     public activeModal: NgbActiveModal,
     private fb: FormBuilder,
-    private categoryService: CategoryService,
-    private shopService: ShopService
+    private categoryService: CategoryService
   ) {
     this.productForm = this.fb.group({
       name: ['', Validators.required],
@@ -36,13 +33,11 @@ export class ProductModalComponent implements OnInit {
       sku: ['', Validators.required],
       isActive: [true],
       categoryId: [''],
-      shopId: ['']
     });
   }
 
   ngOnInit(): void {
     this.loadCategories();
-    this.loadShops();
     
     if (this.product) {
       this.title = 'Edit Product';
@@ -67,27 +62,6 @@ export class ProductModalComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error loading categories:', error);
-      }
-    });
-  }
-
-  loadShops(): void {
-    this.shopService.getList({
-      maxResultCount: 1000,
-      skipCount: 0,
-      sorting: 'name'
-    }).subscribe({
-      next: (response: any) => {
-        if (Array.isArray(response)) {
-          this.shops = response;
-        } else if (response && response.items) {
-          this.shops = response.items;
-        } else {
-          this.shops = [];
-        }
-      },
-      error: (error) => {
-        console.error('Error loading shops:', error);
       }
     });
   }

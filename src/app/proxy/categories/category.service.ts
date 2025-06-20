@@ -48,11 +48,17 @@ export class CategoryService {
     { apiName: this.apiName,...config });
   
 
-  getList = (input: PagedAndSortedResultRequestDto, config?: Partial<Rest.Config>) =>
+  getList = (input: PagedAndSortedResultRequestDto & { filter?: string; isActive?: boolean }, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<CategoryDto>>({
       method: 'GET',
       url: '/api/app/category',
-      params: { sorting: input.sorting, skipCount: input.skipCount, maxResultCount: input.maxResultCount },
+      params: { 
+        sorting: input.sorting,
+        skipCount: input.skipCount,
+        maxResultCount: input.maxResultCount,
+        filter: input.filter,
+        isActive: input.isActive
+      },
     },
     { apiName: this.apiName,...config });
   

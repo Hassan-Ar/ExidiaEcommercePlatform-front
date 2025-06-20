@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { CategoryService } from '../../proxy/categories/category.service';
 import { CategoryDto } from '../../proxy/categories/dtos/models';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-category-list',
@@ -11,6 +13,10 @@ import { CategoryDto } from '../../proxy/categories/dtos/models';
 export class CategoryListComponent implements OnInit {
   categories: CategoryDto[] = [];
   loading = false;
+  filter = '';
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+
+  private searchChanged: Subject<string> = new Subject<string>();
 
   constructor(
     private categoryService: CategoryService,
@@ -19,6 +25,14 @@ export class CategoryListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadCategories();
+
+    this.searchChanged.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(term => {
+      this.filter = term;
+      this.loadCategories();
+    });
   }
 
   loadCategories(): void {
@@ -26,7 +40,9 @@ export class CategoryListComponent implements OnInit {
     this.categoryService.getList({ 
       sorting: 'name',
       maxResultCount: 1000,
-      skipCount: 0
+      skipCount: 0,
+      filter: this.filter,
+      isActive: this.statusFilter === 'all' ? undefined : this.statusFilter === 'active'
     }).subscribe({
       next: (response: any) => {
         console.log('Category list response:', response); // Debug log
@@ -75,5 +91,13 @@ export class CategoryListComponent implements OnInit {
 
   onImageError(event: any): void {
     event.target.style.display = 'none';
+  }
+
+  applyStatusFilter(): void {
+    this.loadCategories();
+  }
+
+  onSearchTextChange(val: string): void {
+    this.searchChanged.next(val);
   }
 } 

@@ -1,12 +1,4 @@
-<!-- Loading State -->
-<div *ngIf="loading" class="d-flex justify-content-center py-5">
-  <div class="spinner-border text-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
-  </div>
-</div>
-
-<!-- Main Content -->
-<div *ngIf="!loading" class="categories-container">
+<div class="categories-container">
   <!-- Header -->
   <div class="page-header">
     <div class="header-content">
@@ -24,6 +16,29 @@
         </button>
       </div>
     </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar card p-3 mb-4">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6">
+        <label class="form-label" for="catSearch">Search</label>
+        <input id="catSearch" type="text" class="form-control" [(ngModel)]="filter" (ngModelChange)="onSearchTextChange($event)" placeholder="Category name or description" />
+      </div>
+      <div class="col-md-6">
+        <label class="form-label" for="catStatus">Status</label>
+        <select id="catStatus" class="form-select" [(ngModel)]="statusFilter" (change)="applyStatusFilter()">
+          <option value="all">All</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading spinner -->
+  <div class="text-center my-3" *ngIf="loading">
+    <div class="spinner-border text-primary" role="status"></div>
   </div>
 
   <!-- Stats Cards -->

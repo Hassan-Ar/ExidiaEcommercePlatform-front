@@ -9,7 +9,6 @@ export interface CreateUpdateProductDto {
   image?: File;
   isActive: boolean;
   categoryId?: string;
-  shopId?: string;
 }
 
 export interface ProductDto extends AuditedEntityDto<string> {
@@ -21,5 +20,4 @@ export interface ProductDto extends AuditedEntityDto<string> {
   imageUrl?: string;
   isActive: boolean;
   categoryId?: string;
-  shopId?: string;
 }

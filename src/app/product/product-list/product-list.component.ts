@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProductService } from '../../proxy/products/product.service';
+import { CategoryService } from '../../proxy/categories/category.service';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ProductModalComponent } from './product-modal/product-modal.component';
 import { ProductDto } from '../../proxy/products/dtos/models';
+import { CategoryDto } from '../../proxy/categories/dtos/models';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-product-list',
@@ -13,15 +17,42 @@ import { ProductDto } from '../../proxy/products/dtos/models';
 export class ProductListComponent implements OnInit {
   products: ProductDto[] = [];
   loading = false;
+  // Filtering state
+  filter = '';
+  selectedCategoryId: string = '';
+  statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  categories: CategoryDto[] = [];
+
+  private searchChanged: Subject<string> = new Subject<string>();
 
   constructor(
     private productService: ProductService,
+    private categoryService: CategoryService,
     private router: Router,
     private modalService: NgbModal
   ) {}
 
   ngOnInit(): void {
+    this.loadCategories();
     this.loadProducts();
+
+    // set up debounced search
+    this.searchChanged.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe((term) => {
+      this.filter = term;
+      this.loadProducts();
+    });
+  }
+
+  loadCategories(): void {
+    this.categoryService.getList({ maxResultCount: 1000 }).subscribe({
+      next: (response: any) => {
+        this.categories = Array.isArray(response) ? response : (response?.items || []);
+      },
+      error: (err) => console.error('Error loading categories', err)
+    });
   }
 
   loadProducts(): void {
@@ -29,7 +60,10 @@ export class ProductListComponent implements OnInit {
     this.productService.getList({ 
       sorting: 'name',
       maxResultCount: 1000,
-      skipCount: 0
+      skipCount: 0,
+      filter: this.filter,
+      categoryId: this.selectedCategoryId || undefined,
+      isActive: this.statusFilter === 'all' ? undefined : this.statusFilter === 'active'
     }).subscribe({
       next: (response: any) => {
         console.log('Product list response:', response); // Debug log
@@ -137,5 +171,14 @@ export class ProductListComponent implements OnInit {
 
   getTotalStock(): number {
     return this.products.reduce((total, product) => total + product.stockQuantity, 0);
+  }
+
+  // Called when filter inputs change
+  applyFilters(): void {
+    this.loadProducts();
+  }
+
+  onFilterTextChange(value: string): void {
+    this.searchChanged.next(value);
   }
 } 

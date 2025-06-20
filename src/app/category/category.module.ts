@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { CategoryListComponent } from './category-list/category-list.component';
 import { CategoryFormComponent } from './category-form/category-form.component';
 import { CategoryDetailComponent } from './category-detail/category-detail.component';
@@ -18,6 +19,7 @@ import { SharedModule } from '../shared/shared.module';
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    FormsModule,
     CategoryRoutingModule,
     SharedModule
   ],

@@ -1,21 +1,48 @@
+// Color Palette (matching product detail)
+$primary-color: #4361ee;
+$secondary-color: #7209b7;
+$primary-gradient: linear-gradient(135deg, $primary-color 0%, $secondary-color 100%);
+
 // Modal styling
 .modal-header {
   border-bottom: 1px solid #eee;
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px 8px 0 0;
 }
 
 .modal-title {
   font-weight: 600;
   color: #333;
+  font-size: 1.25rem;
 }
 
 .modal-body {
-  padding: 20px;
+  padding: 25px;
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
 .modal-footer {
   border-top: 1px solid #eee;
-  padding: 15px 20px;
+  padding: 20px 25px;
+  background: #f8f9fa;
+  
+  .btn {
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    
+    &.btn-primary {
+      background: $primary-gradient;
+      border: none;
+      
+      &:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3);
+      }
+    }
+  }
 }
 
 // Form section styling
