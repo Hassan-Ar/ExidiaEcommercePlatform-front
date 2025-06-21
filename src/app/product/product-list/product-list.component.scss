@@ -219,6 +219,32 @@
   &.price {
     font-weight: 600;
     color: #4361ee;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+
+    .original-price {
+      text-decoration: line-through;
+      color: #999;
+      font-size: 0.8em;
+      font-weight: 400;
+    }
+
+    .discounted-price {
+      color: #e74c3c;
+      font-weight: 600;
+      font-size: 1.1em;
+    }
+
+    .discount-badge {
+      background-color: #e74c3c;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 12px;
+      font-size: 0.75em;
+      font-weight: 500;
+      margin-top: 2px;
+    }
   }
   
   &.text-danger {

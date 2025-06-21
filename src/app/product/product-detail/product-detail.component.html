@@ -125,7 +125,14 @@
             
             <div class="detail-item">
               <label class="detail-label">Price:</label>
-              <span class="detail-value price-value">${{ product.price | number:'1.2-2' }}</span>
+              <div class="detail-value price-container" *ngIf="product.discountPercent && product.discountPercent > 0; else normalPriceTemplate">
+                <div class="original-price">Was: {{ getOriginalPrice(product) | currency }}</div>
+                <div class="current-price">Now: {{ product.price | currency }}</div>
+                <div class="discount-info">Save {{ product.discountPercent }}% ({{ getDiscountAmount(product) | currency }})</div>
+              </div>
+              <ng-template #normalPriceTemplate>
+                <span class="detail-value price-value">{{ product.price | currency }}</span>
+              </ng-template>
             </div>
 
             <div class="detail-item" *ngIf="product.categoryId">

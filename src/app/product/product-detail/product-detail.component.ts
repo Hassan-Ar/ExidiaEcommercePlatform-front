@@ -176,4 +176,18 @@ export class ProductDetailComponent implements OnInit {
     const target = event.target as HTMLImageElement;
     target.src = this.defaultImage;
   }
+
+  getOriginalPrice(product: ProductDto): number {
+    if (product.discountPercent && product.discountPercent > 0) {
+      // Calculate original price: finalPrice = originalPrice * (1 - discount/100)
+      // So: originalPrice = finalPrice / (1 - discount/100)
+      return product.price / (1 - product.discountPercent / 100);
+    }
+    return product.price;
+  }
+
+  getDiscountAmount(product: ProductDto): number {
+    const originalPrice = this.getOriginalPrice(product);
+    return originalPrice - product.price;
+  }
 } 

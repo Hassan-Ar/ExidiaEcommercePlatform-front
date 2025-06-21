@@ -29,10 +29,44 @@ import { CategoryDto } from '../../proxy/categories/dtos/models';
           </div>
 
           <div class="mb-3">
-            <label for="price" class="form-label">Price</label>
-            <input type="number" class="form-control" id="price" formControlName="price" min="0" step="0.01">
+            <label for="price" class="form-label">Final Price (After Discount)</label>
+            <input type="number" class="form-control" id="price" formControlName="price" min="0" step="0.01" (input)="calculateOriginalPrice()">
+            <div class="form-text">Enter the final selling price after applying any discount.</div>
             <div class="invalid-feedback" *ngIf="form.get('price').invalid && form.get('price').touched">
               Price must be greater than or equal to 0
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="discountPercent" class="form-label">Discount Percentage</label>
+            <div class="input-group">
+              <input type="number" class="form-control" id="discountPercent" formControlName="discountPercent" 
+                     min="0" max="100" step="0.01" placeholder="0" (input)="calculateOriginalPrice()">
+              <span class="input-group-text">%</span>
+            </div>
+            <div class="form-text">Enter discount percentage (0-100%). The price above is the final price after discount.</div>
+            <div class="invalid-feedback" *ngIf="form.get('discountPercent').invalid && form.get('discountPercent').touched">
+              Discount must be between 0 and 100
+            </div>
+          </div>
+
+          <!-- Price Calculation Display -->
+          <div class="mb-3" *ngIf="showPriceCalculation()">
+            <div class="alert alert-info">
+              <h6 class="mb-2"><i class="fas fa-calculator me-2"></i>Price Breakdown:</h6>
+              <div class="d-flex justify-content-between">
+                <span>Original Price (before discount):</span>
+                <strong>{{ getOriginalPrice() | currency }}</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Discount ({{ form.get('discountPercent')?.value }}%):</span>
+                <strong class="text-danger">-{{ getDiscountAmount() | currency }}</strong>
+              </div>
+              <hr class="my-2">
+              <div class="d-flex justify-content-between">
+                <span><strong>Final Price:</strong></span>
+                <strong class="text-success">{{ form.get('price')?.value | currency }}</strong>
+              </div>
             </div>
           </div>
 
@@ -118,6 +152,7 @@ export class ProductFormComponent implements OnInit {
       name: ['', Validators.required],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
+      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       stockQuantity: [0, [Validators.required, Validators.min(0)]],
       sku: ['', Validators.required],
       categoryId: ['', Validators.required],
@@ -153,6 +188,7 @@ export class ProductFormComponent implements OnInit {
           name: product.name,
           description: product.description,
           price: product.price,
+          discountPercent: product.discountPercent || 0,
           stockQuantity: product.stockQuantity,
           sku: product.sku,
           categoryId: product.categoryId,
@@ -197,6 +233,7 @@ export class ProductFormComponent implements OnInit {
       name: formValue.name,
       description: formValue.description,
       price: formValue.price,
+      discountPercent: formValue.discountPercent || 0,
       stockQuantity: formValue.stockQuantity,
       sku: formValue.sku,
       categoryId: formValue.categoryId,
@@ -235,5 +272,35 @@ export class ProductFormComponent implements OnInit {
 
   onCancel(): void {
     this.router.navigate(['/products']);
+  }
+
+  calculateOriginalPrice(): void {
+    // This method is called when price or discount changes to trigger price calculation display
+    // The actual calculation is done in the getter methods
+  }
+
+  showPriceCalculation(): boolean {
+    const price = this.form.get('price')?.value;
+    const discount = this.form.get('discountPercent')?.value;
+    return price > 0 && discount > 0;
+  }
+
+  getOriginalPrice(): number {
+    const finalPrice = this.form.get('price')?.value || 0;
+    const discountPercent = this.form.get('discountPercent')?.value || 0;
+    
+    if (discountPercent === 0) {
+      return finalPrice;
+    }
+    
+    // Calculate original price: finalPrice = originalPrice * (1 - discount/100)
+    // So: originalPrice = finalPrice / (1 - discount/100)
+    return finalPrice / (1 - discountPercent / 100);
+  }
+
+  getDiscountAmount(): number {
+    const originalPrice = this.getOriginalPrice();
+    const finalPrice = this.form.get('price')?.value || 0;
+    return originalPrice - finalPrice;
   }
 } 

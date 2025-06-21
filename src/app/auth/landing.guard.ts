@@ -12,8 +12,10 @@ export class LandingGuard implements CanActivate {
     const isAuth = user?.isAuthenticated;
 
     if (isAuth && roles.includes('ShopAdmin')) {
-      this.router.navigateByUrl('/dashboard');
+      // Redirect admin users to admin dashboard
+      this.router.navigateByUrl('/admin');
     } else {
+      // Redirect non-admin users (or not logged in) to store
       this.router.navigateByUrl('/store');
     }
     return false;

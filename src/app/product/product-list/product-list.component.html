@@ -129,7 +129,14 @@
           <div class="product-meta">
             <span class="meta-item price">
               <i class="fas fa-tag me-1"></i>
-              {{ product.price | currency }}
+              <ng-container *ngIf="product.discountPercent && product.discountPercent > 0; else normalPrice">
+                <span class="original-price">{{ getOriginalPrice(product) | currency }}</span>
+                <span class="discounted-price">{{ product.price | currency }}</span>
+                <span class="discount-badge">-{{ product.discountPercent }}%</span>
+              </ng-container>
+              <ng-template #normalPrice>
+                {{ product.price | currency }}
+              </ng-template>
             </span>
             <span class="meta-item" [ngClass]="getStockClass(product.stockQuantity)">
               <i class="fas fa-cubes me-1"></i>

@@ -181,4 +181,13 @@ export class ProductListComponent implements OnInit {
   onFilterTextChange(value: string): void {
     this.searchChanged.next(value);
   }
+
+  getOriginalPrice(product: ProductDto): number {
+    if (product.discountPercent && product.discountPercent > 0) {
+      // Calculate original price: finalPrice = originalPrice * (1 - discount/100)
+      // So: originalPrice = finalPrice / (1 - discount/100)
+      return product.price / (1 - product.discountPercent / 100);
+    }
+    return product.price;
+  }
 } 

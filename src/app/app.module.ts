@@ -8,10 +8,14 @@ import { ThemeSharedModule } from '@abp/ng.theme.shared';
 import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { PublicLayoutComponent } from './layouts/public-layout.component';
+import { AdminDashboardLayoutComponent } from './layouts/admin-dashboard-layout.component';
+import { WelcomeComponent } from './welcome/welcome.component';
 import { APP_ROUTE_PROVIDER } from './route.provider';
 import { FeatureManagementModule } from '@abp/ng.feature-management';
 import { AbpOAuthModule } from '@abp/ng.oauth';
@@ -23,6 +27,8 @@ import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    CommonModule,
+    RouterModule,
     AppRoutingModule,
     CoreModule.forRoot({
       environment,
@@ -39,7 +45,12 @@ import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
     SideMenuLayoutModule.forRoot(),
     AccountLayoutModule.forRoot(),
   ],
-  declarations: [AppComponent, PublicLayoutComponent],
+  declarations: [
+    AppComponent, 
+    PublicLayoutComponent,
+    AdminDashboardLayoutComponent,
+    WelcomeComponent
+  ],
   providers: [APP_ROUTE_PROVIDER],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
