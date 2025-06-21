@@ -29,6 +29,7 @@ export class ProductModalComponent implements OnInit {
       name: ['', Validators.required],
       description: [''],
       price: [0, [Validators.required, Validators.min(0)]],
+      discountPercent: [0, [Validators.min(0), Validators.max(100)]],
       stockQuantity: [0, [Validators.required, Validators.min(0)]],
       sku: ['', Validators.required],
       isActive: [true],
@@ -93,5 +94,35 @@ export class ProductModalComponent implements OnInit {
       
       this.activeModal.close(formData);
     }
+  }
+
+  calculateOriginalPrice(): void {
+    // This method is called when price or discount changes to trigger price calculation display
+    // The actual calculation is done in the getter methods
+  }
+
+  showPriceCalculation(): boolean {
+    const price = this.productForm.get('price')?.value;
+    const discount = this.productForm.get('discountPercent')?.value;
+    return price > 0 && discount > 0;
+  }
+
+  getOriginalPrice(): number {
+    const finalPrice = this.productForm.get('price')?.value || 0;
+    const discountPercent = this.productForm.get('discountPercent')?.value || 0;
+    
+    if (discountPercent === 0) {
+      return finalPrice;
+    }
+    
+    // Calculate original price: finalPrice = originalPrice * (1 - discount/100)
+    // So: originalPrice = finalPrice / (1 - discount/100)
+    return finalPrice / (1 - discountPercent / 100);
+  }
+
+  getDiscountAmount(): number {
+    const originalPrice = this.getOriginalPrice();
+    const finalPrice = this.productForm.get('price')?.value || 0;
+    return originalPrice - finalPrice;
   }
 } 

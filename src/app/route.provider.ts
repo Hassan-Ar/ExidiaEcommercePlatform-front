@@ -8,19 +8,19 @@ export const APP_ROUTE_PROVIDER = [
 function configureRoutes(routesService: RoutesService) {
   return () => {
     routesService.add([
-      {
-        path: '/',
-        name: '::Menu:Home',
-        iconClass: 'fas fa-home',
-        order: 1,
-        layout: eLayoutType.application,
-      },
+      // {
+      //   path: '/',
+      //   name: '::Menu:Home',
+      //   iconClass: 'fas fa-home',
+      //   order: 1,
+      //   layout: eLayoutType.application,
+      // },
       {
         path: '/store',
         name: '::Menu:Store',
         iconClass: 'fas fa-store',
         order: 0,
-        layout: eLayoutType.empty,
+        layout: eLayoutType.application,
       },
       {
         path: '/ecommerce',
@@ -29,38 +29,22 @@ function configureRoutes(routesService: RoutesService) {
         order: 2,
         layout: eLayoutType.application,
       },
-      {
-        path: '/products',
-        name: '::Menu:Products',
-        parentName: '::Menu:Ecommerce',
-        iconClass: 'fas fa-box',
-        order: 1,
-        layout: eLayoutType.application,
-      },
-      {
-        path: '/orders',
-        name: '::Menu:Orders',
-        parentName: '::Menu:Ecommerce',
-        iconClass: 'fas fa-shopping-cart',
-        order: 2,
-        layout: eLayoutType.application,
-      },
-      {
-        path: '/categories',
-        name: '::Menu:Categories',
-        parentName: '::Menu:Ecommerce',
-        iconClass: 'fas fa-tags',
-        order: 3,
-        layout: eLayoutType.application,
-      },
-      {
-        path: '/dashboard',
-        name: '::Menu:Dashboard',
-        parentName: '::Menu:Ecommerce',
-        iconClass: 'fas fa-chart-line',
-        order: 4,
-        layout: eLayoutType.application,
-      },
+      // {
+      //   path: '/products',
+      //   name: '::Menu:Products',
+      //   parentName: '::Menu:Ecommerce',
+      //   iconClass: 'fas fa-box',
+      //   order: 1,
+      //   layout: eLayoutType.application,
+      // },
+      // {
+      //   path: '/orders',
+      //   name: '::Menu:Orders',
+      //   parentName: '::Menu:Ecommerce',
+      //   iconClass: 'fas fa-shopping-cart',
+      //   order: 2,
+      //  // layout: eLayoutType.account,
+      // },
     ]);
   };
 }
