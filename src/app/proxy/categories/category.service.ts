@@ -1,4 +1,4 @@
-import type { CategoryDto, CreateUpdateCategoryDto } from './dtos/models';
+import type { CategoryDto, CreateUpdateCategoryDto, CategoryLookupDto } from './dtos/models';
 import { RestService, Rest } from '@abp/ng.core';
 import type { PagedAndSortedResultRequestDto, PagedResultDto } from '@abp/ng.core';
 import { Injectable } from '@angular/core';
@@ -76,6 +76,13 @@ export class CategoryService {
       method: 'GET',
       url: '/api/app/category/top',
       params: { maxCount },
+    },
+    { apiName: this.apiName, ...config });
+
+  getLookup = (config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CategoryLookupDto[]>({
+      method: 'GET',
+      url: '/api/app/category/lookup',
     },
     { apiName: this.apiName, ...config });
   

@@ -1,4 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
+import { AuthService, ConfigStateService } from '@abp/ng.core';
+import { CategoryService } from '../../proxy/categories/category.service';
+import { CategoryLookupDto } from '../../proxy/categories/dtos/models';
+import { Router } from '@angular/router';
+import { CartStateService } from './cart-state.service';
 
 @Component({
   selector: 'app-store-header',
@@ -17,12 +22,24 @@ import { Component } from '@angular/core';
           </div>
           <div class="col-md-6 text-end">
             <small>
-              <a href="#" class="text-light text-decoration-none me-3">
-                <i class="fas fa-user me-1"></i>My Account
-              </a>
-              <a href="#" class="text-light text-decoration-none me-3">
-                <i class="fas fa-heart me-1"></i>Wishlist
-              </a>
+              <!-- Auth links -->
+              <ng-container *ngIf="!isAuthenticated; else loggedInTpl">
+                <a routerLink="/account/login" class="text-light text-decoration-none me-3">
+                  <i class="fas fa-sign-in-alt me-1"></i>Login
+                </a>
+                <a routerLink="/account/register" class="text-light text-decoration-none me-3">
+                  <i class="fas fa-user-plus me-1"></i>Register
+                </a>
+              </ng-container>
+              <ng-template #loggedInTpl>
+                <span class="me-3">
+                  <i class="fas fa-user me-1"></i>{{ userName }}
+                </span>
+                <a (click)="logout($event)" class="text-light text-decoration-none me-3" style="cursor:pointer;">
+                  <i class="fas fa-sign-out-alt me-1"></i>Logout
+                </a>
+              </ng-template>
+
               <a routerLink="/store/cart" class="text-light text-decoration-none">
                 <i class="fas fa-shopping-cart me-1"></i>Shopping Cart (0)
               </a>
@@ -52,16 +69,20 @@ import { Component } from '@angular/core';
               <a class="nav-link" routerLink="/store">Home</a>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              <a class="nav-link dropdown-toggle" role="button" (click)="toggleCategoriesDropdown()" 
+                 [attr.aria-expanded]="showCategoriesDropdown" style="cursor: pointer;">
                 Categories
               </a>
-              <ul class="dropdown-menu">
-                <li><a class="dropdown-item" href="#">Electronics</a></li>
-                <li><a class="dropdown-item" href="#">Computers</a></li>
-                <li><a class="dropdown-item" href="#">Clothing</a></li>
-                <li><a class="dropdown-item" href="#">Books</a></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><a class="dropdown-item" href="#">View All Categories</a></li>
+              <ul class="dropdown-menu" [class.show]="showCategoriesDropdown">
+                <li *ngFor="let c of categories">
+                  <a class="dropdown-item" [routerLink]="['/store/category', c.id]" (click)="closeCategoriesDropdown()">{{ c.name }}</a>
+                </li>
+                <li *ngIf="categories && categories.length">
+                  <hr class="dropdown-divider" />
+                </li>
+                <li>
+                  <a class="dropdown-item" routerLink="/store/products" (click)="closeCategoriesDropdown()">View All Products</a>
+                </li>
               </ul>
             </li>
             <li class="nav-item">
@@ -76,9 +97,16 @@ import { Component } from '@angular/core';
           </ul>
 
           <!-- Search bar -->
-          <form class="d-flex me-3" style="width: 300px;">
+          <form class="d-flex me-3" style="width: 300px;" (ngSubmit)="onSearch()">
             <div class="input-group">
-              <input class="form-control" type="search" placeholder="Search products..." aria-label="Search">
+              <input
+                class="form-control"
+                type="search"
+                placeholder="Search products..."
+                aria-label="Search"
+                [(ngModel)]="searchTerm"
+                name="searchTerm"
+              />
               <button class="btn btn-outline-primary" type="submit">
                 <i class="fas fa-search"></i>
               </button>
@@ -89,7 +117,7 @@ import { Component } from '@angular/core';
           <a routerLink="/store/cart" class="btn btn-primary position-relative">
             <i class="fas fa-shopping-cart"></i>
             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-              0
+              {{ cartService.getItemCount() }}
               <span class="visually-hidden">items in cart</span>
             </span>
           </a>
@@ -236,4 +264,74 @@ import { Component } from '@angular/core';
     }
   `]
 })
-export class StoreHeaderComponent {} 
+export class StoreHeaderComponent implements OnInit {
+  categories: CategoryLookupDto[] = [];
+  showCategoriesDropdown = false;
+  searchTerm = '';
+
+  constructor(
+    public authService: AuthService,
+    private config: ConfigStateService,
+    private categoryService: CategoryService,
+    public cartService: CartStateService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadCategories();
+  }
+
+  private loadCategories(): void {
+    this.categoryService
+      .getLookup()
+      .subscribe((categories: CategoryLookupDto[]) => {
+        this.categories = categories;
+      });
+  }
+
+  get isAuthenticated(): boolean {
+    return this.authService.isAuthenticated;
+  }
+
+  get userName(): string {
+    const user: any = this.config.getDeep('currentUser');
+    return user?.userName ?? '';
+  }
+
+  toggleCategoriesDropdown(): void {
+    this.showCategoriesDropdown = !this.showCategoriesDropdown;
+  }
+
+  closeCategoriesDropdown(): void {
+    this.showCategoriesDropdown = false;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: Event): void {
+    const target = event.target as HTMLElement;
+    const dropdown = target.closest('.dropdown');
+    if (!dropdown) {
+      this.showCategoriesDropdown = false;
+    }
+  }
+
+  logout(event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    // Clear cart on logout
+    this.cartService.onLogout();
+    this.authService.logout();
+  }
+
+  onSearch(): void {
+    const term = this.searchTerm.trim();
+    // Navigate to product catalog with search query param
+    if (term) {
+      this.router.navigate(['/store/products'], { queryParams: { search: term } });
+    } else {
+      this.router.navigate(['/store/products']);
+    }
+  }
+} 

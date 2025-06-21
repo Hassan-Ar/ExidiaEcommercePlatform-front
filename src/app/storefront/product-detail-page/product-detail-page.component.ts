@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ProductService } from '../../proxy/products/product.service';
 import { ProductDto } from '../../proxy/products/dtos/models';
+import { CartStateService } from '../shared/cart-state.service';
 
 @Component({
   selector: 'app-product-detail-page',
@@ -11,7 +12,11 @@ import { ProductDto } from '../../proxy/products/dtos/models';
 export class ProductDetailPageComponent implements OnInit {
   product: ProductDto | null = null;
 
-  constructor(private route: ActivatedRoute, private productService: ProductService) {}
+  constructor(
+    private route: ActivatedRoute,
+    private productService: ProductService,
+    private cartState: CartStateService
+  ) {}
 
   ngOnInit(): void {
     // Ensure viewport starts at top on navigation
@@ -23,6 +28,12 @@ export class ProductDetailPageComponent implements OnInit {
         // Ensure after content load we are at top
         setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
       });
+    }
+  }
+
+  addToCart(): void {
+    if (this.product) {
+      this.cartState.addItem(this.product.id, 1);
     }
   }
 } 

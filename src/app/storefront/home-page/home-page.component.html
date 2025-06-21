@@ -39,18 +39,20 @@
                   <div class="discount-badge">
                     <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
                   </div>
-                  <div class="product-image-container">
+                  <div class="product-image-container" (click)="viewProductDetails(product.id)" style="cursor: pointer;">
                     <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+1)" 
                          [alt]="product.name" class="product-image">
                     <div class="product-overlay">
-                      <button class="quick-add-btn" (click)="addToCart(product)">
+                      <button class="quick-add-btn" (click)="addToCart(product); $event.stopPropagation()">
                         <i class="fas fa-cart-plus"></i>
                         Quick Add
                       </button>
                     </div>
                   </div>
                   <div class="product-info">
-                    <h5 class="product-name">{{ product.name }}</h5>
+                    <h5 class="product-name">
+                      <a [routerLink]="['/store/product', product.id]" class="text-decoration-none text-dark">{{ product.name }}</a>
+                    </h5>
                     <div class="price-section">
                       <span class="current-price">{{ product.price | currency }}</span>
                       <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
@@ -74,18 +76,20 @@
                   <div class="discount-badge">
                     <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
                   </div>
-                  <div class="product-image-container">
+                  <div class="product-image-container" (click)="viewProductDetails(product.id)" style="cursor: pointer;">
                     <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+4)" 
                          [alt]="product.name" class="product-image">
                     <div class="product-overlay">
-                      <button class="quick-add-btn" (click)="addToCart(product)">
+                      <button class="quick-add-btn" (click)="addToCart(product); $event.stopPropagation()">
                         <i class="fas fa-cart-plus"></i>
                         Quick Add
                       </button>
                     </div>
                   </div>
                   <div class="product-info">
-                    <h5 class="product-name">{{ product.name }}</h5>
+                    <h5 class="product-name">
+                      <a [routerLink]="['/store/product', product.id]" class="text-decoration-none text-dark">{{ product.name }}</a>
+                    </h5>
                     <div class="price-section">
                       <span class="current-price">{{ product.price | currency }}</span>
                       <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
@@ -109,18 +113,20 @@
                   <div class="discount-badge">
                     <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
                   </div>
-                  <div class="product-image-container">
+                  <div class="product-image-container" (click)="viewProductDetails(product.id)" style="cursor: pointer;">
                     <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+7)" 
                          [alt]="product.name" class="product-image">
                     <div class="product-overlay">
-                      <button class="quick-add-btn" (click)="addToCart(product)">
+                      <button class="quick-add-btn" (click)="addToCart(product); $event.stopPropagation()">
                         <i class="fas fa-cart-plus"></i>
                         Quick Add
                       </button>
                     </div>
                   </div>
                   <div class="product-info">
-                    <h5 class="product-name">{{ product.name }}</h5>
+                    <h5 class="product-name">
+                      <a [routerLink]="['/store/product', product.id]" class="text-decoration-none text-dark">{{ product.name }}</a>
+                    </h5>
                     <div class="price-section">
                       <span class="current-price">{{ product.price | currency }}</span>
                       <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
@@ -167,7 +173,8 @@
     <div class="creative-categories" *ngIf="topCategories.length > 0">
       <div class="row g-4">
         <div class="col-6 col-md-4 col-lg-2" *ngFor="let c of topCategories; let i = index">
-          <div class="category-card-creative" [class]="'category-' + (i % 6)">
+          <div class="category-card-creative" [class]="'category-' + (i % 6)" 
+               (click)="navigateToCategory(c.id)" style="cursor: pointer;">
             <div class="category-icon-wrapper">
               <div class="category-icon">
                 <img [src]="c.imageUrl || 'https://via.placeholder.com/80x80?text=' + c.name" 
@@ -200,18 +207,18 @@
       <div class="row g-4">
         <div class="col-6 col-md-4 col-lg-3" *ngFor="let p of featuredProducts; let i = index">
           <div class="creative-product-card" [class]="'product-theme-' + (i % 4)">
-            <div class="product-image-container">
+            <div class="product-image-container" (click)="viewProductDetails(p.id)" style="cursor: pointer;">
               <img [src]="p.imageUrl || 'https://via.placeholder.com/300x300?text=' + p.name" 
                    class="product-image" [alt]="p.name" />
               <div class="product-overlay">
                 <div class="product-actions">
-                  <button class="action-btn" title="Add to Wishlist">
+                  <button class="action-btn" title="Add to Wishlist" (click)="$event.stopPropagation()">
                     <i class="fas fa-heart"></i>
                   </button>
-                  <a class="action-btn" title="View Details" [routerLink]="['/store', 'product', p.id]">
+                  <a class="action-btn" title="View Details" [routerLink]="['/store', 'product', p.id]" (click)="$event.stopPropagation()">
                     <i class="fas fa-eye"></i>
                   </a>
-                  <button class="action-btn" title="Compare">
+                  <button class="action-btn" title="Compare" (click)="$event.stopPropagation()">
                     <i class="fas fa-balance-scale"></i>
                   </button>
                 </div>
@@ -229,13 +236,15 @@
                 </div>
                 <span class="rating-count">({{ p.rating?.toFixed(1) }} / 5 - {{ p.ratingCount }} reviews)</span>
               </div>
-              <h6 class="product-title">{{ p.name }}</h6>
+              <h6 class="product-title">
+                <a [routerLink]="['/store/product', p.id]" class="text-decoration-none text-dark">{{ p.name }}</a>
+              </h6>
               <p class="product-description">{{ p.shortDescription || 'Premium quality product with excellent features and great value for money.' }}</p>
               <div class="product-price">
                 <span class="current-price">{{ p.price | currency }}</span>
                 <span class="original-price" *ngIf="getOriginalPrice(p)">{{ getOriginalPrice(p) | currency }}</span>
               </div>
-              <button class="add-to-cart-btn" (click)="addToCart(p)">
+              <button class="add-to-cart-btn" (click)="addToCart(p); $event.stopPropagation()">
                 <span class="btn-text">Add to Cart</span>
                 <i class="fas fa-shopping-cart btn-icon"></i>
               </button>

@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { ProductService } from '../../proxy/products/product.service';
 import { CategoryService } from '../../proxy/categories/category.service';
+import { CartStateService } from '../shared/cart-state.service';
 
 @Component({
   selector: 'app-store-home-page',
@@ -18,7 +20,12 @@ export class HomePageComponent implements OnInit {
   ];
   pollAnswers = ['Excellent', 'Good', 'Poor', 'Very bad'];
 
-  constructor(private productService: ProductService, private categoryService: CategoryService) {}
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private cartState: CartStateService,
+    private router: Router
+  ) {}
 
   ngOnInit(): void {
     this.productService
@@ -35,8 +42,15 @@ export class HomePageComponent implements OnInit {
   }
 
   addToCart(product: any) {
-    // TODO: integrate with cart service
-    alert('Added to cart: ' + product.name);
+    this.cartState.addItem(product.id, 1);
+  }
+
+  navigateToCategory(categoryId: string): void {
+    this.router.navigate(['/store/category', categoryId]);
+  }
+
+  viewProductDetails(productId: string): void {
+    this.router.navigate(['/store/product', productId]);
   }
 
   getDiscountedProducts(start: number, end: number): any[] {

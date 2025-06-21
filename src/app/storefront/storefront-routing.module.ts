@@ -4,6 +4,7 @@ import { StorefrontLayoutComponent } from './store-layout/storefront-layout.comp
 import { HomePageComponent } from './home-page/home-page.component';
 import { ProductCatalogComponent } from './product-catalog/product-catalog.component';
 import { ProductDetailPageComponent } from './product-detail-page/product-detail-page.component';
+import { CartPageComponent } from './cart-page/cart-page.component';
 
 const routes: Routes = [
   {
@@ -12,7 +13,9 @@ const routes: Routes = [
     children: [
       { path: '', component: HomePageComponent },
       { path: 'products', component: ProductCatalogComponent },
+      { path: 'category/:id', component: ProductCatalogComponent },
       { path: 'product/:id', component: ProductDetailPageComponent },
+      { path: 'cart', component: CartPageComponent },
     ],
   },
 ];

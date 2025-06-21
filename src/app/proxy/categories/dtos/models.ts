@@ -17,3 +17,9 @@ export interface CreateUpdateCategoryDto {
   parentId?: string;
   displayOrder: number;
 }
+
+export interface CategoryLookupDto {
+  id: string;
+  name?: string;
+  displayName?: string;
+}

@@ -1,5 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { ProductService } from '../../proxy/products/product.service';
+import { CategoryService } from '../../proxy/categories/category.service';
+import { CartStateService } from '../shared/cart-state.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-product-catalog',
@@ -8,15 +12,18 @@ import { ProductService } from '../../proxy/products/product.service';
       <!-- Breadcrumb -->
       <nav aria-label="breadcrumb" class="mb-4">
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Home</a></li>
-          <li class="breadcrumb-item active" aria-current="page">Products</li>
+          <li class="breadcrumb-item"><a routerLink="/store" class="text-decoration-none">Home</a></li>
+          <li class="breadcrumb-item" *ngIf="!currentCategoryId"><a routerLink="/store/products" class="text-decoration-none">Products</a></li>
+          <li class="breadcrumb-item" *ngIf="currentCategoryId"><a routerLink="/store/products" class="text-decoration-none">Products</a></li>
+          <li class="breadcrumb-item active" aria-current="page" *ngIf="currentCategoryId">{{ currentCategoryName || 'Category' }}</li>
+          <li class="breadcrumb-item active" aria-current="page" *ngIf="!currentCategoryId">All Products</li>
         </ol>
       </nav>
 
       <!-- Page Header -->
       <div class="row align-items-center mb-4">
         <div class="col-md-6">
-          <h1 class="h2 mb-0">Products</h1>
+          <h1 class="h2 mb-0">{{ currentCategoryId ? (currentCategoryName || 'Category Products') : 'All Products' }}</h1>
           <p class="text-muted mb-0">{{ products.length }} items found</p>
         </div>
         <div class="col-md-6">
@@ -24,12 +31,13 @@ import { ProductService } from '../../proxy/products/product.service';
             <!-- Sort By -->
             <div class="me-3">
               <label class="form-label me-2 mb-0">Sort by:</label>
-              <select class="form-select form-select-sm" style="width: auto;">
-                <option>Name: A to Z</option>
-                <option>Name: Z to A</option>
-                <option>Price: Low to High</option>
-                <option>Price: High to Low</option>
-                <option>Created on</option>
+              <select class="form-select form-select-sm" style="width: auto;" 
+                      [(ngModel)]="currentSort" (ngModelChange)="onSortChange($event)">
+                <option value="name-asc">Name: A to Z</option>
+                <option value="name-desc">Name: Z to A</option>
+                <option value="price-asc">Price: Low to High</option>
+                <option value="price-desc">Price: High to Low</option>
+                <option value="created-desc">Created on</option>
               </select>
             </div>
             
@@ -58,21 +66,12 @@ import { ProductService } from '../../proxy/products/product.service';
               <!-- Category Filter -->
               <div class="mb-4">
                 <h6 class="fw-bold">Category</h6>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cat1">
-                  <label class="form-check-label" for="cat1">Electronics</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cat2">
-                  <label class="form-check-label" for="cat2">Computers</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cat3">
-                  <label class="form-check-label" for="cat3">Clothing</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="cat4">
-                  <label class="form-check-label" for="cat4">Books</label>
+                <div class="form-check" *ngFor="let category of categories; let i = index">
+                  <input class="form-check-input" type="checkbox" 
+                         [id]="'cat' + i"
+                         [checked]="isCategorySelected(category.id)"
+                         (change)="onCategoryChange($event, category.id)">
+                  <label class="form-check-label" [for]="'cat' + i">{{ category.name }}</label>
                 </div>
               </div>
 
@@ -81,29 +80,27 @@ import { ProductService } from '../../proxy/products/product.service';
                 <h6 class="fw-bold">Price Range</h6>
                 <div class="row g-2">
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" placeholder="Min">
+                    <input type="number" class="form-control form-control-sm" 
+                           placeholder="Min" [(ngModel)]="priceRange.min">
                   </div>
                   <div class="col-6">
-                    <input type="number" class="form-control form-control-sm" placeholder="Max">
+                    <input type="number" class="form-control form-control-sm" 
+                           placeholder="Max" [(ngModel)]="priceRange.max">
                   </div>
                 </div>
-                <button class="btn btn-outline-primary btn-sm mt-2 w-100">Apply</button>
+                <button class="btn btn-outline-primary btn-sm mt-2 w-100" 
+                        (click)="applyPriceFilter()">Apply</button>
               </div>
 
               <!-- Manufacturer -->
-              <div class="mb-4">
+              <div class="mb-4" *ngIf="manufacturers.length > 0">
                 <h6 class="fw-bold">Manufacturer</h6>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="brand1">
-                  <label class="form-check-label" for="brand1">Apple</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="brand2">
-                  <label class="form-check-label" for="brand2">Samsung</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="brand3">
-                  <label class="form-check-label" for="brand3">Microsoft</label>
+                <div class="form-check" *ngFor="let manufacturer of manufacturers; let i = index">
+                  <input class="form-check-input" type="checkbox" 
+                         [id]="'brand' + i"
+                         [checked]="isManufacturerSelected(manufacturer)"
+                         (change)="onManufacturerChange($event, manufacturer)">
+                  <label class="form-check-label" [for]="'brand' + i">{{ manufacturer }}</label>
                 </div>
               </div>
 
@@ -111,26 +108,70 @@ import { ProductService } from '../../proxy/products/product.service';
               <div class="mb-4">
                 <h6 class="fw-bold">Availability</h6>
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="avail1">
+                  <input class="form-check-input" type="checkbox" id="avail1"
+                         [checked]="isAvailabilitySelected('inStock')"
+                         (change)="onAvailabilityChange($event, 'inStock')">
                   <label class="form-check-label" for="avail1">In Stock</label>
                 </div>
                 <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="avail2">
+                  <input class="form-check-input" type="checkbox" id="avail2"
+                         [checked]="isAvailabilitySelected('outOfStock')"
+                         (change)="onAvailabilityChange($event, 'outOfStock')">
                   <label class="form-check-label" for="avail2">Out of Stock</label>
                 </div>
               </div>
 
-              <button class="btn btn-outline-secondary btn-sm w-100">Clear Filters</button>
+              <button class="btn btn-outline-secondary btn-sm w-100" (click)="clearFilters()">Clear Filters</button>
             </div>
           </div>
         </div>
 
         <!-- Products Grid -->
         <div class="col-lg-9">
+          <!-- Active Filters Display -->
+          <div class="mb-3" *ngIf="hasActiveFilters()">
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              <span class="text-muted me-2">Active filters:</span>
+              
+              <!-- Category filters -->
+              <span class="badge bg-primary" *ngFor="let categoryId of selectedCategoryIds">
+                {{ getCategoryName(categoryId) }}
+                <button type="button" class="btn-close btn-close-white ms-1" 
+                        (click)="onCategoryFilterChange(categoryId, false)"></button>
+              </span>
+              
+              <!-- Price range filter -->
+              <span class="badge bg-primary" *ngIf="priceRange.min !== null || priceRange.max !== null">
+                Price: {{ priceRange.min || 0 | currency }} - {{ priceRange.max || '∞' | currency }}
+                <button type="button" class="btn-close btn-close-white ms-1" 
+                        (click)="clearPriceFilter()"></button>
+              </span>
+              
+              <!-- Manufacturer filters -->
+              <span class="badge bg-primary" *ngFor="let manufacturer of selectedManufacturers">
+                {{ manufacturer }}
+                <button type="button" class="btn-close btn-close-white ms-1" 
+                        (click)="onManufacturerFilterChange(manufacturer, false)"></button>
+              </span>
+              
+              <!-- Availability filters -->
+              <span class="badge bg-primary" *ngFor="let availability of selectedAvailability">
+                {{ availability === 'inStock' ? 'In Stock' : 'Out of Stock' }}
+                <button type="button" class="btn-close btn-close-white ms-1" 
+                        (click)="onAvailabilityFilterChange(availability, false)"></button>
+              </span>
+              
+              <!-- Clear all filters -->
+              <button class="btn btn-outline-secondary btn-sm" (click)="clearFilters()">
+                Clear All
+              </button>
+            </div>
+          </div>
+          
           <div class="row g-4">
             <div class="col-sm-6 col-md-4" *ngFor="let p of products">
               <div class="product-card h-100">
-                <div class="product-image-wrapper">
+                <div class="product-image-wrapper" (click)="viewProductDetails(p.id)" style="cursor: pointer;">
                   <img [src]="p.imageUrl || 'https://via.placeholder.com/300x300?text=' + p.name" 
                        class="product-image" [alt]="p.name" />
                   
@@ -145,7 +186,8 @@ import { ProductService } from '../../proxy/products/product.service';
                     <button class="btn btn-sm btn-outline-primary" title="Add to Wishlist">
                       <i class="fas fa-heart"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-primary" title="Quick View">
+                    <button class="btn btn-sm btn-outline-primary" title="View Details" 
+                            (click)="viewProductDetails(p.id)">
                       <i class="fas fa-eye"></i>
                     </button>
                     <button class="btn btn-sm btn-outline-primary" title="Compare">
@@ -156,7 +198,7 @@ import { ProductService } from '../../proxy/products/product.service';
 
                 <div class="product-info">
                   <h6 class="product-title">
-                    <a href="#" class="text-decoration-none text-dark">{{ p.name }}</a>
+                    <a [routerLink]="['/store/product', p.id]" class="text-decoration-none text-dark">{{ p.name }}</a>
                   </h6>
                   
                   <!-- Rating -->
@@ -178,9 +220,19 @@ import { ProductService } from '../../proxy/products/product.service';
                     </span>
                   </div>
 
+                  <div class="product-stock mb-2">
+                    <span class="badge" [class.bg-success]="p.stockQuantity > 0" [class.bg-danger]="p.stockQuantity === 0">
+                      {{ p.stockQuantity > 0 ? 'In Stock (' + p.stockQuantity + ')' : 'Out of Stock' }}
+                    </span>
+                  </div>
+
                   <div class="product-actions-bottom">
-                    <button class="btn btn-primary btn-sm flex-fill" (click)="addToCart(p)">
-                      <i class="fas fa-cart-plus me-1"></i>Add to cart
+                    <button class="btn btn-outline-primary btn-sm me-2" (click)="viewProductDetails(p.id)">
+                      <i class="fas fa-info-circle me-1"></i>Details
+                    </button>
+                    <button class="btn btn-primary btn-sm flex-fill" (click)="addToCart(p)" 
+                            [disabled]="p.stockQuantity === 0">
+                      <i class="fas fa-cart-plus me-1"></i>{{ p.stockQuantity > 0 ? 'Add to cart' : 'Out of Stock' }}
                     </button>
                   </div>
                 </div>
@@ -347,19 +399,307 @@ import { ProductService } from '../../proxy/products/product.service';
     }
   `]
 })
-export class ProductCatalogComponent implements OnInit {
+export class ProductCatalogComponent implements OnInit, OnDestroy {
   products: any[] = [];
-  
-  constructor(private productService: ProductService) {}
-  
-  ngOnInit() {
-    this.productService
-      .getList({ skipCount: 0, maxResultCount: 1000 })
-      .subscribe((r: any) => (this.products = Array.isArray(r) ? r : r.items ?? []));
+  allProducts: any[] = []; // Store all products for filtering
+  categories: any[] = [];
+  currentCategoryId: string | null = null;
+  currentCategoryName: string | null = null;
+  private routeSub: Subscription | undefined;
+  private querySub: Subscription | undefined;
+  searchTerm: string | null = null;
+
+  // Filter properties
+  selectedCategoryIds: string[] = [];
+  priceRange = { min: null as number | null, max: null as number | null };
+  selectedManufacturers: string[] = [];
+  selectedAvailability: string[] = [];
+  manufacturers: string[] = [];
+
+  // Sorting
+  currentSort = 'name-asc';
+
+  constructor(
+    private productService: ProductService,
+    private categoryService: CategoryService,
+    private cartState: CartStateService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadCategories();
+    
+    this.routeSub = this.route.paramMap.subscribe((params: ParamMap) => {
+      const categoryId = params.get('id');
+      this.currentCategoryId = categoryId;
+      
+      // Reset filters when navigating to different categories
+      this.resetFilters();
+      
+      if (categoryId) {
+        this.selectedCategoryIds = [categoryId];
+        this.loadCategoryInfo(categoryId);
+        this.loadProductsByCategory(categoryId);
+      } else {
+        this.currentCategoryName = null;
+        this.loadAllProducts();
+      }
+    });
+
+    this.querySub = this.route.queryParamMap.subscribe(qParams => {
+      const term = qParams.get('search');
+      this.searchTerm = term && term.trim().length > 0 ? term.trim() : null;
+      this.applyFilters();
+    });
   }
 
-  addToCart(product: any) {
-    // TODO: integrate with cart service
-    alert('Added to cart: ' + product.name);
+  ngOnDestroy(): void {
+    if (this.routeSub) {
+      this.routeSub.unsubscribe();
+    }
+    if (this.querySub) {
+      this.querySub.unsubscribe();
+    }
+  }
+
+  private loadAllProducts(): void {
+    this.productService
+      .getList({ sorting: '', skipCount: 0, maxResultCount: 1000 })
+      .subscribe((r: any) => {
+        this.allProducts = Array.isArray(r) ? r : r.items ?? [];
+        this.extractManufacturers();
+        this.applyFilters();
+      });
+  }
+
+  private loadProductsByCategory(categoryId: string): void {
+    this.productService
+      .getByCategory(categoryId)
+      .subscribe((products: any[]) => {
+        this.allProducts = products ?? [];
+        this.extractManufacturers();
+        this.applyFilters();
+      });
+  }
+
+  private loadCategories(): void {
+    this.categoryService.getLookup().subscribe({
+      next: (categories: any[]) => {
+        this.categories = categories;
+      },
+      error: (error) => {
+        console.error('Error loading categories:', error);
+      }
+    });
+  }
+
+  private loadCategoryInfo(categoryId: string): void {
+    this.categoryService.get(categoryId).subscribe({
+      next: (category: any) => {
+        this.currentCategoryName = category.name;
+      },
+      error: (error) => {
+        console.error('Error loading category info:', error);
+        this.currentCategoryName = 'Category';
+      }
+    });
+  }
+
+  private extractManufacturers(): void {
+    const manufacturerSet = new Set<string>();
+    this.allProducts.forEach(product => {
+      if (product.manufacturer && product.manufacturer.trim()) {
+        manufacturerSet.add(product.manufacturer.trim());
+      }
+    });
+    this.manufacturers = Array.from(manufacturerSet).sort();
+  }
+
+  private resetFilters(): void {
+    this.selectedCategoryIds = [];
+    this.priceRange = { min: null, max: null };
+    this.selectedManufacturers = [];
+    this.selectedAvailability = [];
+  }
+
+  // Event handlers
+  onCategoryChange(event: Event, categoryId: string): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.onCategoryFilterChange(categoryId, isChecked);
+  }
+
+  onManufacturerChange(event: Event, manufacturer: string): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.onManufacturerFilterChange(manufacturer, isChecked);
+  }
+
+  onAvailabilityChange(event: Event, availability: string): void {
+    const isChecked = (event.target as HTMLInputElement).checked;
+    this.onAvailabilityFilterChange(availability, isChecked);
+  }
+
+  // Filter methods
+  onCategoryFilterChange(categoryId: string, isChecked: boolean): void {
+    if (isChecked) {
+      if (!this.selectedCategoryIds.includes(categoryId)) {
+        this.selectedCategoryIds.push(categoryId);
+      }
+    } else {
+      this.selectedCategoryIds = this.selectedCategoryIds.filter(id => id !== categoryId);
+    }
+    this.applyFilters();
+  }
+
+  onManufacturerFilterChange(manufacturer: string, isChecked: boolean): void {
+    if (isChecked) {
+      if (!this.selectedManufacturers.includes(manufacturer)) {
+        this.selectedManufacturers.push(manufacturer);
+      }
+    } else {
+      this.selectedManufacturers = this.selectedManufacturers.filter(m => m !== manufacturer);
+    }
+    this.applyFilters();
+  }
+
+  onAvailabilityFilterChange(availability: string, isChecked: boolean): void {
+    if (isChecked) {
+      if (!this.selectedAvailability.includes(availability)) {
+        this.selectedAvailability.push(availability);
+      }
+    } else {
+      this.selectedAvailability = this.selectedAvailability.filter(a => a !== availability);
+    }
+    this.applyFilters();
+  }
+
+  applyPriceFilter(): void {
+    this.applyFilters();
+  }
+
+  onSortChange(sort: string): void {
+    this.currentSort = sort;
+    this.applyFilters();
+  }
+
+  clearFilters(): void {
+    this.resetFilters();
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    let filteredProducts = [...this.allProducts];
+
+    // Category filter
+    if (this.selectedCategoryIds.length > 0) {
+      filteredProducts = filteredProducts.filter(product => 
+        this.selectedCategoryIds.includes(product.categoryId)
+      );
+    }
+
+    // Price range filter
+    if (this.priceRange.min !== null) {
+      filteredProducts = filteredProducts.filter(product => 
+        product.price >= this.priceRange.min!
+      );
+    }
+    if (this.priceRange.max !== null) {
+      filteredProducts = filteredProducts.filter(product => 
+        product.price <= this.priceRange.max!
+      );
+    }
+
+    // Manufacturer filter
+    if (this.selectedManufacturers.length > 0) {
+      filteredProducts = filteredProducts.filter(product => 
+        product.manufacturer && this.selectedManufacturers.includes(product.manufacturer)
+      );
+    }
+
+    // Availability filter
+    if (this.selectedAvailability.length > 0) {
+      filteredProducts = filteredProducts.filter(product => {
+        const inStock = product.stockQuantity > 0;
+        if (this.selectedAvailability.includes('inStock') && inStock) return true;
+        if (this.selectedAvailability.includes('outOfStock') && !inStock) return true;
+        return false;
+      });
+    }
+
+    // Search term filter
+    if (this.searchTerm) {
+      const lower = this.searchTerm.toLowerCase();
+      filteredProducts = filteredProducts.filter(product =>
+        (product.name && product.name.toLowerCase().includes(lower)) ||
+        (product.description && product.description.toLowerCase().includes(lower))
+      );
+    }
+
+    // Apply sorting
+    this.sortProducts(filteredProducts);
+    
+    this.products = filteredProducts;
+  }
+
+  private sortProducts(products: any[]): void {
+    switch (this.currentSort) {
+      case 'name-asc':
+        products.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        products.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'price-asc':
+        products.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-desc':
+        products.sort((a, b) => b.price - a.price);
+        break;
+      case 'created-desc':
+        products.sort((a, b) => new Date(b.creationTime).getTime() - new Date(a.creationTime).getTime());
+        break;
+      default:
+        // Default sorting by name
+        products.sort((a, b) => a.name.localeCompare(b.name));
+    }
+  }
+
+  isCategorySelected(categoryId: string): boolean {
+    return this.selectedCategoryIds.includes(categoryId);
+  }
+
+  isManufacturerSelected(manufacturer: string): boolean {
+    return this.selectedManufacturers.includes(manufacturer);
+  }
+
+  isAvailabilitySelected(availability: string): boolean {
+    return this.selectedAvailability.includes(availability);
+  }
+
+  hasActiveFilters(): boolean {
+    return this.selectedCategoryIds.length > 0 ||
+           this.priceRange.min !== null ||
+           this.priceRange.max !== null ||
+           this.selectedManufacturers.length > 0 ||
+           this.selectedAvailability.length > 0 ||
+           !!this.searchTerm;
+  }
+
+  getCategoryName(categoryId: string): string {
+    const category = this.categories.find(c => c.id === categoryId);
+    return category ? category.name : 'Unknown Category';
+  }
+
+  clearPriceFilter(): void {
+    this.priceRange = { min: null, max: null };
+    this.applyFilters();
+  }
+
+  viewProductDetails(productId: string): void {
+    this.router.navigate(['/store/product', productId]);
+  }
+
+  addToCart(product: any): void {
+    this.cartState.addItem(product.id, 1);
   }
 } 

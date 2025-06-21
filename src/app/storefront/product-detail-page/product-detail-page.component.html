@@ -16,7 +16,7 @@
         <span class="badge bg-success">Save {{ product.discountPercent }}%</span>
       </p>
       <p>{{ product.description }}</p>
-      <button class="btn btn-primary me-3">Add to Cart</button>
+      <button class="btn btn-primary me-3" (click)="addToCart()">Add to Cart</button>
       <button class="btn btn-outline-secondary" routerLink="/">Back to Home</button>
     </div>
   </div>

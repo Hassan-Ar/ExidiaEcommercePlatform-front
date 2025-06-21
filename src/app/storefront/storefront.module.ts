@@ -10,9 +10,10 @@ import { StoreFooterComponent } from './shared/store-footer.component';
 import { HomePageComponent } from './home-page/home-page.component';
 import { ProductDetailModalComponent } from './product-detail-modal/product-detail-modal.component';
 import { ProductDetailPageComponent } from './product-detail-page/product-detail-page.component';
+import { CartPageComponent } from './cart-page/cart-page.component';
 
 @NgModule({
-  declarations: [StorefrontLayoutComponent, StoreHeaderComponent, StoreFooterComponent, ProductCatalogComponent, HomePageComponent, ProductDetailModalComponent, ProductDetailPageComponent],
+  declarations: [StorefrontLayoutComponent, StoreHeaderComponent, StoreFooterComponent, ProductCatalogComponent, HomePageComponent, ProductDetailModalComponent, ProductDetailPageComponent, CartPageComponent],
   imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, StorefrontRoutingModule],
   exports: [ProductDetailModalComponent],
 })
