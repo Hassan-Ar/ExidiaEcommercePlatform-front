@@ -53,6 +53,15 @@ export class ProductService {
     { apiName: this.apiName,...config });
   
 
+  getFeatured = (maxCount: number = 8, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ProductDto[]>({
+      method: 'GET',
+      url: '/api/app/product/featured',
+      params: { maxCount },
+    },
+    { apiName: this.apiName, ...config });
+  
+
   getList = (input: PagedAndSortedResultRequestDto & { filter?: string; categoryId?: string; isActive?: boolean }, config?: Partial<Rest.Config>) =>
     this.restService.request<any, PagedResultDto<ProductDto>>({
       method: 'GET',
@@ -75,6 +84,24 @@ export class ProductService {
       url: `/api/app/product/${id}/toggle-active-status`,
     },
     { apiName: this.apiName,...config });
+  
+
+  rate = (id: string, stars: number, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ProductDto>({
+      method: 'POST',
+      url: `/api/app/product/${id}/rate`,
+      params: { stars },
+    },
+    { apiName: this.apiName, ...config });
+  
+
+  getLatestDiscounted = (maxCount: number = 10, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, ProductDto[]>({
+      method: 'GET',
+      url: '/api/app/product/latest-discounted',
+      params: { maxCount },
+    },
+    { apiName: this.apiName, ...config });
   
 
   update = (id: string, input: CreateUpdateProductDto, config?: Partial<Rest.Config>) => {
@@ -118,6 +145,10 @@ export class ProductService {
     formData.append('sku', input.sku || '');
     formData.append('isActive', input.isActive?.toString() || 'false');
     formData.append('categoryId', input.categoryId || '');
+    
+    if (input.discountPercent !== undefined && input.discountPercent !== null) {
+      formData.append('discountPercent', input.discountPercent.toString());
+    }
     
     // Add image file if exists
     if (input.image) {

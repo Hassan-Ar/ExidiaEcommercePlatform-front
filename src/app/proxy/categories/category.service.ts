@@ -71,6 +71,15 @@ export class CategoryService {
     { apiName: this.apiName,...config });
   
 
+  getTop = (maxCount: number = 6, config?: Partial<Rest.Config>) =>
+    this.restService.request<any, CategoryDto[]>({
+      method: 'GET',
+      url: '/api/app/category/top',
+      params: { maxCount },
+    },
+    { apiName: this.apiName, ...config });
+  
+
   removeSubCategory = (parentId: string, subCategoryId: string, config?: Partial<Rest.Config>) =>
     this.restService.request<any, CategoryDto>({
       method: 'DELETE',

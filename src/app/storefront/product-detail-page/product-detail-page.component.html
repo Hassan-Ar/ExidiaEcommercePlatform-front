@@ -1,0 +1,23 @@
+<div class="container py-5" *ngIf="product">
+  <div class="row g-5">
+    <div class="col-md-6 text-center">
+      <img [src]="product.imageUrl || 'https://via.placeholder.com/500x500?text=' + product.name" class="img-fluid rounded" [alt]="product.name" />
+    </div>
+    <div class="col-md-6">
+      <h2>{{ product.name }}</h2>
+      <div class="d-flex align-items-center mb-3">
+        <ng-container *ngFor="let star of [1,2,3,4,5]">
+          <i [ngClass]="star <= product.rating ? 'fas fa-star text-warning' : 'far fa-star text-muted'"></i>
+        </ng-container>
+        <small class="ms-2">({{ product.rating?.toFixed(1) }} / 5 - {{ product.ratingCount }} reviews)</small>
+      </div>
+      <h3>{{ product.price | currency }}</h3>
+      <p *ngIf="product.discountPercent > 0">
+        <span class="badge bg-success">Save {{ product.discountPercent }}%</span>
+      </p>
+      <p>{{ product.description }}</p>
+      <button class="btn btn-primary me-3">Add to Cart</button>
+      <button class="btn btn-outline-secondary" routerLink="/">Back to Home</button>
+    </div>
+  </div>
+</div> 

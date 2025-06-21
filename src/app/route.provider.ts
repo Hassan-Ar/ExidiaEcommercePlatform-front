@@ -16,6 +16,13 @@ function configureRoutes(routesService: RoutesService) {
         layout: eLayoutType.application,
       },
       {
+        path: '/store',
+        name: '::Menu:Store',
+        iconClass: 'fas fa-store',
+        order: 0,
+        layout: eLayoutType.empty,
+      },
+      {
         path: '/ecommerce',
         name: '::Menu:Ecommerce',
         iconClass: 'fas fa-store',

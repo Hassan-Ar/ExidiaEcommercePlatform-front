@@ -1,0 +1,31 @@
+<div class="modal fade show d-block" tabindex="-1" role="dialog" [ngStyle]="{ display: product ? 'block' : 'none' }">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content" *ngIf="product">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ product.name }}</h5>
+        <button type="button" class="btn-close" aria-label="Close" (click)="hide()"></button>
+      </div>
+      <div class="modal-body row g-4">
+        <div class="col-md-6">
+          <img [src]="product.imageUrl || 'https://via.placeholder.com/500x500?text=' + product.name" class="img-fluid" alt="{{ product.name }}">
+        </div>
+        <div class="col-md-6">
+          <p>{{ product.description }}</p>
+          <h4>{{ product.price | currency }}</h4>
+          <p *ngIf="product.discountPercent > 0">
+            <span class="badge bg-success">-{{ product.discountPercent }}% OFF</span>
+          </p>
+          <div class="d-flex align-items-center mb-3">
+            <ng-container *ngFor="let star of [1,2,3,4,5]">
+              <i [ngClass]="star <= product.rating ? 'fas fa-star text-warning' : 'far fa-star text-muted'"></i>
+            </ng-container>
+            <small class="ms-2">({{ product.rating?.toFixed(1) }} / 5)</small>
+          </div>
+          <button class="btn btn-primary me-2" (click)="hide()">Add to Cart</button>
+          <button class="btn btn-outline-secondary" (click)="hide()">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="modal-backdrop fade show"></div>
+</div> 

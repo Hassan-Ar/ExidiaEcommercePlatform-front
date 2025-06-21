@@ -5,12 +5,13 @@ import { IdentityConfigModule } from '@abp/ng.identity/config';
 import { SettingManagementConfigModule } from '@abp/ng.setting-management/config';
 import { TenantManagementConfigModule } from '@abp/ng.tenant-management/config';
 import { ThemeSharedModule } from '@abp/ng.theme.shared';
-import { NgModule } from '@angular/core';
+import { NgModule, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { PublicLayoutComponent } from './layouts/public-layout.component';
 import { APP_ROUTE_PROVIDER } from './route.provider';
 import { FeatureManagementModule } from '@abp/ng.feature-management';
 import { AbpOAuthModule } from '@abp/ng.oauth';
@@ -38,8 +39,9 @@ import { AccountLayoutModule } from '@abp/ng.theme.lepton-x/account';
     SideMenuLayoutModule.forRoot(),
     AccountLayoutModule.forRoot(),
   ],
-  declarations: [AppComponent],
+  declarations: [AppComponent, PublicLayoutComponent],
   providers: [APP_ROUTE_PROVIDER],
   bootstrap: [AppComponent],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
 })
 export class AppModule {}

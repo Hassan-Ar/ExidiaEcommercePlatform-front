@@ -13,7 +13,7 @@ export const environment = {
     issuer: 'https://localhost:44367/',
     redirectUri: baseUrl,
     clientId: 'EcommercePlatform_App',
-    responseType: 'code',
+
     scope: 'offline_access EcommercePlatform',
     requireHttps: true,
   },

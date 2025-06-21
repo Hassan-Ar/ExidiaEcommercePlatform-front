@@ -1,0 +1,362 @@
+<!-- Hero Discounted Items Slider -->
+<div class="hero-section">
+  <div class="hero-background">
+    <div class="floating-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+      <div class="shape shape-4"></div>
+      <div class="shape shape-5"></div>
+    </div>
+  </div>
+  
+  <div class="hero-content">
+    <div class="container">
+      <div class="hero-header text-center mb-5">
+        <h1 class="hero-title">
+          <span class="gradient-text">Mega Sale</span>
+          <br>Up to 70% Off
+        </h1>
+        <p class="hero-subtitle">
+          Don't miss out on these incredible deals! Limited time offers on premium products.
+        </p>
+      </div>
+      
+      <!-- Discounted Items Slider -->
+      <div id="discountedItemsCarousel" class="carousel slide discount-carousel" data-bs-ride="carousel">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#discountedItemsCarousel" data-bs-slide-to="0" class="active"></button>
+          <button type="button" data-bs-target="#discountedItemsCarousel" data-bs-slide-to="1"></button>
+          <button type="button" data-bs-target="#discountedItemsCarousel" data-bs-slide-to="2"></button>
+        </div>
+        
+        <div class="carousel-inner">
+          <!-- Slide 1 -->
+          <div class="carousel-item active">
+            <div class="row g-4">
+              <div class="col-md-4" *ngFor="let product of getDiscountedProducts(0, 3); let i = index">
+                <div class="discount-product-card">
+                  <div class="discount-badge">
+                    <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
+                  </div>
+                  <div class="product-image-container">
+                    <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+1)" 
+                         [alt]="product.name" class="product-image">
+                    <div class="product-overlay">
+                      <button class="quick-add-btn" (click)="addToCart(product)">
+                        <i class="fas fa-cart-plus"></i>
+                        Quick Add
+                      </button>
+                    </div>
+                  </div>
+                  <div class="product-info">
+                    <h5 class="product-name">{{ product.name }}</h5>
+                    <div class="price-section">
+                      <span class="current-price">{{ product.price | currency }}</span>
+                      <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
+                      <span class="savings" *ngIf="getOriginalPrice(product)">Save {{ (getOriginalPrice(product) - product.price) | currency }}</span>
+                    </div>
+                    <div class="deal-timer">
+                      <i class="fas fa-clock"></i>
+                      Limited Time: 2d 14h 32m
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Slide 2 -->
+          <div class="carousel-item">
+            <div class="row g-4">
+              <div class="col-md-4" *ngFor="let product of getDiscountedProducts(3, 6); let i = index">
+                <div class="discount-product-card">
+                  <div class="discount-badge">
+                    <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
+                  </div>
+                  <div class="product-image-container">
+                    <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+4)" 
+                         [alt]="product.name" class="product-image">
+                    <div class="product-overlay">
+                      <button class="quick-add-btn" (click)="addToCart(product)">
+                        <i class="fas fa-cart-plus"></i>
+                        Quick Add
+                      </button>
+                    </div>
+                  </div>
+                  <div class="product-info">
+                    <h5 class="product-name">{{ product.name }}</h5>
+                    <div class="price-section">
+                      <span class="current-price">{{ product.price | currency }}</span>
+                      <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
+                      <span class="savings" *ngIf="getOriginalPrice(product)">Save {{ (getOriginalPrice(product) - product.price) | currency }}</span>
+                    </div>
+                    <div class="deal-timer">
+                      <i class="fas fa-clock"></i>
+                      Limited Time: 1d 8h 45m
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Slide 3 -->
+          <div class="carousel-item">
+            <div class="row g-4">
+              <div class="col-md-4" *ngFor="let product of getDiscountedProducts(6, 9); let i = index">
+                <div class="discount-product-card">
+                  <div class="discount-badge">
+                    <span class="discount-percent">-{{ getDiscountPercentage(product) }}%</span>
+                  </div>
+                  <div class="product-image-container">
+                    <img [src]="product.imageUrl || 'https://via.placeholder.com/300x250?text=Product+' + (i+7)" 
+                         [alt]="product.name" class="product-image">
+                    <div class="product-overlay">
+                      <button class="quick-add-btn" (click)="addToCart(product)">
+                        <i class="fas fa-cart-plus"></i>
+                        Quick Add
+                      </button>
+                    </div>
+                  </div>
+                  <div class="product-info">
+                    <h5 class="product-name">{{ product.name }}</h5>
+                    <div class="price-section">
+                      <span class="current-price">{{ product.price | currency }}</span>
+                      <span class="original-price" *ngIf="getOriginalPrice(product)">{{ getOriginalPrice(product) | currency }}</span>
+                      <span class="savings" *ngIf="getOriginalPrice(product)">Save {{ (getOriginalPrice(product) - product.price) | currency }}</span>
+                    </div>
+                    <div class="deal-timer">
+                      <i class="fas fa-clock"></i>
+                      Limited Time: 3d 22h 18m
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Carousel Controls -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#discountedItemsCarousel" data-bs-slide="prev">
+          <div class="carousel-control-icon">
+            <i class="fas fa-chevron-left"></i>
+          </div>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#discountedItemsCarousel" data-bs-slide="next">
+          <div class="carousel-control-icon">
+            <i class="fas fa-chevron-right"></i>
+          </div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Creative Categories Section -->
+<section id="categories" class="categories-section">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="section-title">
+        <span class="title-decoration">Shop by</span>
+        <strong class="gradient-text">Categories</strong>
+      </h2>
+      <p class="section-subtitle">Explore our diverse range of premium products</p>
+    </div>
+    
+    <div class="creative-categories" *ngIf="topCategories.length > 0">
+      <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-2" *ngFor="let c of topCategories; let i = index">
+          <div class="category-card-creative" [class]="'category-' + (i % 6)">
+            <div class="category-icon-wrapper">
+              <div class="category-icon">
+                <img [src]="c.imageUrl || 'https://via.placeholder.com/80x80?text=' + c.name" 
+                     [alt]="c.name" />
+              </div>
+            </div>
+            <h6 class="category-name">{{ c.name }}</h6>
+            <div class="category-hover-effect">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Creative Featured Products Section -->
+<section id="featured-products" class="featured-products-section">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="section-title">
+        <span class="title-decoration">Featured</span>
+        <strong class="gradient-text">Products</strong>
+      </h2>
+      <p class="section-subtitle">Handpicked selections just for you</p>
+    </div>
+    
+    <div class="products-grid">
+      <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-3" *ngFor="let p of featuredProducts; let i = index">
+          <div class="creative-product-card" [class]="'product-theme-' + (i % 4)">
+            <div class="product-image-container">
+              <img [src]="p.imageUrl || 'https://via.placeholder.com/300x300?text=' + p.name" 
+                   class="product-image" [alt]="p.name" />
+              <div class="product-overlay">
+                <div class="product-actions">
+                  <button class="action-btn" title="Add to Wishlist">
+                    <i class="fas fa-heart"></i>
+                  </button>
+                  <a class="action-btn" title="View Details" [routerLink]="['/store', 'product', p.id]">
+                    <i class="fas fa-eye"></i>
+                  </a>
+                  <button class="action-btn" title="Compare">
+                    <i class="fas fa-balance-scale"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="product-badges">
+                <span class="badge badge-new" *ngIf="i % 3 === 0">NEW</span>
+                <span class="badge badge-sale" *ngIf="i % 4 === 0">SALE</span>
+              </div>
+            </div>
+            
+            <div class="product-info">
+              <div class="product-rating">
+                <div class="stars">
+                  <i *ngFor="let star of [1,2,3,4,5]" [ngClass]="getStarIcon(p.rating, star)"></i>
+                </div>
+                <span class="rating-count">({{ p.rating?.toFixed(1) }} / 5 - {{ p.ratingCount }} reviews)</span>
+              </div>
+              <h6 class="product-title">{{ p.name }}</h6>
+              <p class="product-description">{{ p.shortDescription || 'Premium quality product with excellent features and great value for money.' }}</p>
+              <div class="product-price">
+                <span class="current-price">{{ p.price | currency }}</span>
+                <span class="original-price" *ngIf="getOriginalPrice(p)">{{ getOriginalPrice(p) | currency }}</span>
+              </div>
+              <button class="add-to-cart-btn" (click)="addToCart(p)">
+                <span class="btn-text">Add to Cart</span>
+                <i class="fas fa-shopping-cart btn-icon"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Creative Features Section -->
+<section class="features-section">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-md-3 col-6">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shipping-fast"></i>
+          </div>
+          <h6 class="feature-title">Free Shipping</h6>
+          <p class="feature-description">On orders over $50</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-undo-alt"></i>
+          </div>
+          <h6 class="feature-title">Easy Returns</h6>
+          <p class="feature-description">30-day return policy</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-shield-alt"></i>
+          </div>
+          <h6 class="feature-title">Secure Payment</h6>
+          <p class="feature-description">100% secure checkout</p>
+        </div>
+      </div>
+      <div class="col-md-3 col-6">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <i class="fas fa-headset"></i>
+          </div>
+          <h6 class="feature-title">24/7 Support</h6>
+          <p class="feature-description">Always here to help</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Creative News Section -->
+<section class="news-section">
+  <div class="container">
+    <div class="section-header text-center mb-5">
+      <h2 class="section-title">
+        <span class="title-decoration">Latest</span>
+        <strong class="gradient-text">News</strong>
+      </h2>
+      <p class="section-subtitle">Stay updated with our latest announcements</p>
+    </div>
+    
+    <div class="row g-4">
+      <div class="col-md-4" *ngFor="let n of news; let i = index">
+        <article class="creative-news-card" [class]="'news-theme-' + (i % 3)">
+          <div class="news-image">
+            <img [src]="'https://via.placeholder.com/400x250?text=News+' + (i + 1)" 
+                 [alt]="n.title" class="img-fluid">
+            <div class="news-overlay">
+              <div class="news-date">
+                <span class="date-day">{{ n.date | date:'dd' }}</span>
+                <span class="date-month">{{ n.date | date:'MMM' }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="news-content">
+            <h5 class="news-title">{{ n.title }}</h5>
+            <p class="news-excerpt">{{ n.excerpt }}</p>
+            <a href="#" class="read-more-btn">
+              <span>Read More</span>
+              <i class="fas fa-arrow-right"></i>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Creative Newsletter Section -->
+<section class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-card">
+      <div class="row align-items-center">
+        <div class="col-lg-6">
+          <div class="newsletter-content">
+            <h3 class="newsletter-title">
+              Stay in the <span class="gradient-text">Loop</span>
+            </h3>
+            <p class="newsletter-subtitle">
+              Subscribe to our newsletter and be the first to know about new products, 
+              exclusive offers, and exciting updates.
+            </p>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="newsletter-form">
+            <div class="input-group">
+              <input type="email" class="form-control" placeholder="Enter your email address">
+              <button class="btn btn-primary" type="submit">
+                <i class="fas fa-paper-plane"></i>
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
