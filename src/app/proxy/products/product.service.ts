@@ -137,23 +137,31 @@ export class ProductService {
   private createFormData(input: CreateUpdateProductDto): FormData {
     const formData = new FormData();
     
-    // Add text fields
-    formData.append('name', input.name || '');
-    formData.append('description', input.description || '');
-    formData.append('price', input.price?.toString() || '0');
-    formData.append('stockQuantity', input.stockQuantity?.toString() || '0');
-    formData.append('sku', input.sku || '');
-    formData.append('isActive', input.isActive?.toString() || 'false');
-    formData.append('categoryId', input.categoryId || '');
+    // 🔥 الحل العملي: تنظيف وتحويل البيانات بشكل صحيح
+    formData.append('name', String(input.name || '').trim());
+    formData.append('description', String(input.description || '').trim());
+    formData.append('price', String(parseFloat(input.price?.toString() || '0') || 0));
+    formData.append('stockQuantity', String(parseInt(input.stockQuantity?.toString() || '0') || 0));
+    formData.append('sku', String(input.sku || '').trim());
+    formData.append('isActive', String(Boolean(input.isActive)));
+    formData.append('categoryId', String(input.categoryId || ''));
     
+    // 🔥 معالجة خاصة للخصم
     if (input.discountPercent !== undefined && input.discountPercent !== null) {
-      formData.append('discountPercent', input.discountPercent.toString());
+      const discount = parseFloat(input.discountPercent.toString()) || 0;
+      formData.append('discountPercent', String(Math.max(0, Math.min(100, discount))));
+    } else {
+      formData.append('discountPercent', '0');
     }
     
-    // Add image file if exists
-    if (input.image) {
+    // 🔥 معالجة الصورة
+    if (input.image && input.image instanceof File) {
       formData.append('image', input.image);
     }
+    
+    // 🔥 للتشخيص - طباعة البيانات المرسلة
+    console.log('📤 Input object being sent:', input);
+    console.log('📤 FormData created successfully');
     
     return formData;
   }
