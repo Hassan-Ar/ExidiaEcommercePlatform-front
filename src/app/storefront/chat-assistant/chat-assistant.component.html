@@ -1,0 +1,32 @@
+<!-- Chat Assistant Floating Panel -->
+<div *ngIf="isAuthenticated" class="chat-assistant" [class.open]="isOpen">
+  <div class="chat-toggle" (click)="toggle()">
+    💬 Chat
+  </div>
+  <div class="chat-panel" *ngIf="isOpen">
+    <div class="chat-sessions" *ngIf="sessions.length">
+      <div *ngFor="let s of sessions" (click)="selectSession(s)" [class.active]="s.id===sessionId" class="session-item">
+        {{s.sessionName || ('Session ' + (s.id | slice:0:6))}}
+      </div>
+    </div>
+    <div class="chat-messages" #msgContainer>
+      <div *ngFor="let msg of messages" [ngClass]="{'message-user': msg.role==='user', 'message-ai': msg.role==='assistant'}" class="chat-message">
+        <div class="msg-text">{{msg.text}}</div>
+        <ng-container *ngIf="msg.products?.length">
+          <div class="product-cards">
+            <div *ngFor="let p of msg.products" class="product-card">
+              <img [src]="p.imageUrl" alt="{{p.name}}" />
+              <div class="title">{{p.name}}</div>
+              <div class="desc">{{p.description}}</div>
+              <a [href]="p.productPageUrl" class="btn btn-sm btn-primary mt-1">View Product</a>
+            </div>
+          </div>
+        </ng-container>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input [(ngModel)]="inputText" (keyup.enter)="send()" placeholder="Type your message..." />
+      <button (click)="send()" class="btn btn-primary btn-sm">Send</button>
+    </div>
+  </div>
+</div> 

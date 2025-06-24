@@ -22,6 +22,7 @@ import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
       <router-outlet></router-outlet>
     </main>
     <app-store-footer></app-store-footer>
+    <app-chat-assistant></app-chat-assistant>
   `,
   styles: [`
     .store-navbar { 

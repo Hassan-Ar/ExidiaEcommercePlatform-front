@@ -11,10 +11,12 @@ import { HomePageComponent } from './home-page/home-page.component';
 import { ProductDetailModalComponent } from './product-detail-modal/product-detail-modal.component';
 import { ProductDetailPageComponent } from './product-detail-page/product-detail-page.component';
 import { CartPageComponent } from './cart-page/cart-page.component';
+import { ChatAssistantComponent } from './chat-assistant/chat-assistant.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
-  declarations: [StorefrontLayoutComponent, StoreHeaderComponent, StoreFooterComponent, ProductCatalogComponent, HomePageComponent, ProductDetailModalComponent, ProductDetailPageComponent, CartPageComponent],
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, StorefrontRoutingModule],
+  declarations: [StorefrontLayoutComponent, StoreHeaderComponent, StoreFooterComponent, ProductCatalogComponent, HomePageComponent, ProductDetailModalComponent, ProductDetailPageComponent, CartPageComponent, ChatAssistantComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, StorefrontRoutingModule, HttpClientModule],
   exports: [ProductDetailModalComponent],
 })
 export class StorefrontModule {} 
