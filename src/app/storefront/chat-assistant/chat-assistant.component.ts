@@ -19,6 +19,7 @@ export class ChatAssistantComponent implements OnInit {
   sessionId: string | null = null;
   isOpen = false;
   sessions: AiChatSessionDto[] = [];
+  isTyping = false;
 
   constructor(private chatService: ChatAssistantService, private authService: AuthService, private config: ConfigStateService) {}
 
@@ -47,17 +48,43 @@ export class ChatAssistantComponent implements OnInit {
 
   send() {
     const text = this.inputText.trim();
-    if (!text) return;
+    if (!text || this.isTyping) return;
 
     this.messages.push({ role: 'user', text });
     this.inputText = '';
+    this.isTyping = true;
 
     this.chatService
       .process({ sessionId: this.sessionId, message: text })
-      .subscribe((res: ChatAssistantResponseDto) => {
-        this.sessionId = res.sessionId;
-        this.messages.push({ role: 'assistant', text: res.assistantMessage, products: res.products });
+      .subscribe({
+        next: (res: ChatAssistantResponseDto) => {
+          this.sessionId = res.sessionId;
+          this.messages.push({ role: 'assistant', text: res.assistantMessage, products: res.products });
+          this.isTyping = false;
+          
+          // Refresh sessions list to show new session
+          if (!this.sessions.find(s => s.id === res.sessionId)) {
+            this.loadSessions();
+          }
+        },
+        error: (err) => {
+          console.error('Chat error:', err);
+          this.messages.push({ 
+            role: 'assistant', 
+            text: 'Sorry, I encountered an error. Please try again.' 
+          });
+          this.isTyping = false;
+        }
       });
+  }
+
+  sendQuickMessage(message: string) {
+    this.inputText = message;
+    this.send();
+  }
+
+  getCurrentTime(): string {
+    return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
   get isAuthenticated(): boolean {
